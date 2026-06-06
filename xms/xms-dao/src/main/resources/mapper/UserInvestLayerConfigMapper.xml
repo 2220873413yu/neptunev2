@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserInvestLayerConfigMapper">
+
+    <resultMap type="UserInvestLayerConfig" id="UserInvestLayerConfigResult">
+        <result property="id"    column="id"    />
+        <result property="level"    column="level"    />
+        <result property="minInvest"    column="min_invest"    />
+        <result property="layerCount"    column="layer_count"    />
+        <result property="rewardRatio"    column="reward_ratio"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectUserInvestLayerConfigVo">
+        select reward_ratio, id, level, min_invest, layer_count, remark, create_time, update_time from t_user_invest_layer_config
+    </sql>
+
+    <select id="selectUserInvestLayerConfigList" parameterType="UserInvestLayerConfig"
+            resultMap="UserInvestLayerConfigResult">
+        <include refid="selectUserInvestLayerConfigVo"/>
+        <where>
+            <if test="level != null "> and level = #{level}</if>
+            <if test="minInvest != null "> and min_invest = #{minInvest}</if>
+            <if test="layerCount != null "> and layer_count = #{layerCount}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

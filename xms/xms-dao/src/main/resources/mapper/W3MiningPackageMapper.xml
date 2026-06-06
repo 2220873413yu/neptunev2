@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3MiningPackageMapper">
+
+    <resultMap type="W3MiningPackage" id="W3MiningPackageResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="type"    column="type"    />
+        <result property="day"    column="day"    />
+        <result property="dayRatio"    column="day_ratio"    />
+        <result property="multipliedValue"    column="multiplied_value"    />
+        <result property="buyNum"    column="buy_num"    />
+        <result property="minBuyPrice"    column="min_buy_price"    />
+        <result property="buyMaxLimit"    column="buy_max_limit"    />
+        <result property="usdtRatio"    column="usdt_ratio"    />
+        <result property="wfRatio"    column="wf_ratio"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="sort"    column="sort"    />
+    </resultMap>
+
+    <sql id="selectW3MiningPackageVo">
+        select sort, buy_max_limit, id, name, type, day, day_ratio, multiplied_value, buy_num, min_buy_price, usdt_ratio, wf_ratio, status, create_time, update_time, deleted from t_w3_mining_package
+    </sql>
+
+    <select id="selectW3MiningPackageList" parameterType="W3MiningPackage"
+            resultMap="W3MiningPackageResult">
+        <include refid="selectW3MiningPackageVo"/>
+        <where>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="sort != null "> and sort = #{sort}</if>
+            <if test="day != null "> and day = #{day}</if>
+            <if test="dayRatio != null "> and day_ratio = #{dayRatio}</if>
+            <if test="multipliedValue != null "> and multiplied_value = #{multipliedValue}</if>
+            <if test="buyNum != null  and buyNum != ''"> and buy_num = #{buyNum}</if>
+            <if test="minBuyPrice != null "> and min_buy_price = #{minBuyPrice}</if>
+            <if test="usdtRatio != null "> and usdt_ratio = #{usdtRatio}</if>
+            <if test="wfRatio != null "> and wf_ratio = #{wfRatio}</if>
+            <if test="status != null "> and status = #{status}</if>
+        </where>
+        order by sort asc
+    </select>
+
+</mapper>

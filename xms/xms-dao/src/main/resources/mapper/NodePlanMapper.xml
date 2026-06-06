@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.NodePlanMapper">
+
+    <resultMap type="NodePlan" id="NodePlanResult">
+        <result property="id"    column="id"    />
+        <result property="nodeLevel"    column="node_level"    />
+        <result property="nodeNameEn"    column="node_name_en"    />
+        <result property="nodeNameHk"    column="node_name_hk"    />
+        <result property="purchaseAmount"    column="purchase_amount"    />
+        <result property="soldQuota"    column="sold_quota"    />
+        <result property="weightCoefficient"    column="weight_coefficient"    />
+        <result property="studioSubsidyRatio"    column="studio_subsidy_ratio"    />
+        <result property="status"    column="status"    />
+        <result property="sortOrder"    column="sort_order"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+
+        <result property="annualRate"    column="annual_rate"    />
+    </resultMap>
+
+    <sql id="selectNodePlanVo">
+        select id, annual_rate, node_level, node_name_en, node_name_hk, purchase_amount, sold_quota, weight_coefficient, studio_subsidy_ratio, status, sort_order, create_time, update_time from t_node_plan
+    </sql>
+
+    <select id="selectNodePlanList" parameterType="NodePlan"
+            resultMap="NodePlanResult">
+        <include refid="selectNodePlanVo"/>
+        <where>
+            <if test="nodeLevel != null "> and node_level = #{nodeLevel}</if>
+            <if test="nodeNameEn != null  and nodeNameEn != ''"> and node_name_en = #{nodeNameEn}</if>
+            <if test="nodeNameHk != null  and nodeNameHk != ''"> and node_name_hk = #{nodeNameHk}</if>
+            <if test="purchaseAmount != null "> and purchase_amount = #{purchaseAmount}</if>
+            <if test="soldQuota != null "> and sold_quota = #{soldQuota}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="sortOrder != null "> and sort_order = #{sortOrder}</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+            <if test="updateTime != null "> and update_time = #{updateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

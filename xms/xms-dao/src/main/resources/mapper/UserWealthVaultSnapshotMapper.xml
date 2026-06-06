@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserWealthVaultSnapshotMapper">
+
+    <resultMap type="UserWealthVaultSnapshot" id="UserWealthVaultSnapshotResult">
+        <result property="snapshotId"    column="snapshot_id"    />
+        <result property="stakeRoundId"    column="stake_round_id"    />
+        <result property="snapshotTime"    column="snapshot_time"    />
+        <result property="id"    column="id"    />
+        <result property="seg1Amount"    column="seg1_amount"    />
+        <result property="seg2Amount"    column="seg2_amount"    />
+        <result property="seg3Amount"    column="seg3_amount"    />
+        <result property="seg4Amount"    column="seg4_amount"    />
+        <result property="seg5Amount"    column="seg5_amount"    />
+        <result property="seg6Amount"    column="seg6_amount"    />
+        <result property="seg7Amount"    column="seg7_amount"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectUserWealthVaultSnapshotVo">
+        select snapshot_id, stake_round_id, snapshot_time, id, seg1_amount, seg2_amount, seg3_amount, seg4_amount, seg5_amount, seg6_amount, seg7_amount, create_time, update_time from t_user_wealth_vault_snapshot
+    </sql>
+
+    <select id="selectUserWealthVaultSnapshotList" parameterType="UserWealthVaultSnapshot"
+            resultMap="UserWealthVaultSnapshotResult">
+        <include refid="selectUserWealthVaultSnapshotVo"/>
+        <where>
+            <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
+            <if test="id != null "> and id = #{id}</if>
+            <if test="snapshotTime != null "> and snapshot_time = #{snapshotTime}</if>
+        </where>
+        order by snapshot_id desc
+    </select>
+
+</mapper>

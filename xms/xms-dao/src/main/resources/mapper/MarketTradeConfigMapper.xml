@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.MarketTradeConfigMapper">
+
+    <resultMap type="MarketTradeConfig" id="MarketTradeConfigResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="type"    column="type"    />
+        <result property="dataType"    column="data_type"    />
+        <result property="dataPankou"    column="data_pankou"    />
+        <result property="dataCode"    column="data_code"    />
+        <result property="commodityNo"    column="commodity_no"    />
+        <result property="contractNo"    column="contract_no"    />
+        <result property="dataLabel"    column="data_label"    />
+        <result property="dataLabelHk"    column="data_label_hk"    />
+        <result property="dataLabelEn"    column="data_label_en"    />
+        <result property="dataLabelJa"    column="data_label_ja"    />
+        <result property="dataLabelKr"    column="data_label_kr"    />
+
+        <result property="dataLabel1"    column="data_label1"    />
+        <result property="dataLabel2"    column="data_label2"    />
+        <result property="dataLabel3"    column="data_label3"    />
+        <result property="dataLabel4"    column="data_label4"    />
+
+
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="deleted"    column="deleted"    />
+    </resultMap>
+
+    <sql id="selectMarketTradeConfigVo">
+        select data_label1, data_label2, data_label3, data_label4, data_label_kr, data_label_ja, data_label_en, data_label_hk, id, name, type, data_type, data_pankou, data_code, commodity_no, contract_no, data_label,  remark, create_time, create_by, update_time, update_by, deleted from xms_market_trade_config
+    </sql>
+
+    <select id="selectMarketTradeConfigList" parameterType="MarketTradeConfig"
+            resultMap="MarketTradeConfigResult">
+        <include refid="selectMarketTradeConfigVo"/>
+        <where>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="dataType != null "> and data_type = #{dataType}</if>
+            <if test="dataPankou != null "> and data_pankou = #{dataPankou}</if>
+            <if test="dataCode != null  and dataCode != ''"> and data_code = #{dataCode}</if>
+            <if test="commodityNo != null  and commodityNo != ''"> and commodity_no = #{commodityNo}</if>
+            <if test="contractNo != null  and contractNo != ''"> and contract_no = #{contractNo}</if>
+            <if test="dataLabel != null  and dataLabel != ''"> and data_label = #{dataLabel}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

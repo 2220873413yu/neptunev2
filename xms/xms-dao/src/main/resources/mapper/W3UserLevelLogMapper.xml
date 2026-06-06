@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3UserLevelLogMapper">
+
+    <resultMap type="W3UserLevelLog" id="W3UserLevelLogResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="oldLevel"    column="old_level"    />
+        <result property="newLevel"    column="new_level"    />
+        <result property="umbrellaPerformance"    column="umbrella_performance"    />
+        <result property="communityPerformance"    column="community_performance"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="type"    column="type"    />
+    </resultMap>
+
+    <sql id="selectW3UserLevelLogVo">
+        select id, user_id, old_level, new_level, umbrella_performance, community_performance, create_time, type from t_w3_user_level_log
+    </sql>
+
+    <select id="selectW3UserLevelLogList" parameterType="W3UserLevelLog"
+            resultMap="W3UserLevelLogResult">
+        <include refid="selectW3UserLevelLogVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="oldLevel != null "> and old_level = #{oldLevel}</if>
+            <if test="newLevel != null "> and new_level = #{newLevel}</if>
+            <if test="umbrellaPerformance != null "> and umbrella_performance = #{umbrellaPerformance}</if>
+            <if test="communityPerformance != null "> and community_performance = #{communityPerformance}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="type != null "> and type = #{type}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

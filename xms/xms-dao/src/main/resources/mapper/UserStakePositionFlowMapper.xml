@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserStakePositionFlowMapper">
+
+    <resultMap type="UserStakePositionFlow" id="UserStakePositionFlowResult">
+        <result property="id"    column="id"    />
+        <result property="flowNo"    column="flow_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="changeType"    column="change_type"    />
+        <result property="bizOrderNo"    column="biz_order_no"    />
+        <result property="changeAmount"    column="change_amount"    />
+        <result property="beforeTotalStake"    column="before_total_stake"    />
+        <result property="afterTotalStake"    column="after_total_stake"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="stakeRoundId"    column="stake_round_id"    />
+    </resultMap>
+
+    <sql id="selectUserStakePositionFlowVo">
+        select id, flow_no, user_id, change_type, biz_order_no, change_amount, before_total_stake, after_total_stake, remark, create_time, stake_round_id from t_user_stake_position_flow
+    </sql>
+
+    <select id="selectUserStakePositionFlowList" parameterType="UserStakePositionFlow"
+            resultMap="UserStakePositionFlowResult">
+        <include refid="selectUserStakePositionFlowVo"/>
+        <where>
+            <if test="flowNo != null  and flowNo != ''"> and flow_no = #{flowNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="changeType != null  and changeType != ''"> and change_type = #{changeType}</if>
+            <if test="bizOrderNo != null  and bizOrderNo != ''"> and biz_order_no = #{bizOrderNo}</if>
+            <if test="changeAmount != null "> and change_amount = #{changeAmount}</if>
+            <if test="beforeTotalStake != null "> and before_total_stake = #{beforeTotalStake}</if>
+            <if test="afterTotalStake != null "> and after_total_stake = #{afterTotalStake}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

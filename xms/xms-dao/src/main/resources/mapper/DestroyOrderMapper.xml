@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.DestroyOrderMapper">
+
+    <resultMap type="DestroyOrder" id="DestroyOrderResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="days"    column="days"    />
+        <result property="usdtValue"    column="usdt_value"    />
+        <result property="validNum1Value"    column="valid_num1_value"    />
+        <result property="lastFtnPrice"    column="last_ftn_price"    />
+        <result property="haveValidNum1"    column="have_valid_num1"    />
+        <result property="status"    column="status"    />
+        <result property="payStatus"    column="pay_status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="payTime"    column="pay_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="isReduced"    column="is_reduced"    />
+        <result property="hash"    column="hash"    />
+        <result property="createDate"    column="create_date"    />
+
+        <result property="reduceTargetAmount"    column="reduce_target_amount"    />
+        <result property="releaseAccumulate"    column="release_accumulate"    />
+    </resultMap>
+
+    <sql id="selectDestroyOrderVo">
+        select release_accumulate, reduce_target_amount, pay_status, create_date, hash, id, order_no, user_id, days, usdt_value, valid_num1_value, last_ftn_price, have_valid_num1, status, create_time, pay_time, update_time, remark, biz_status, is_reduced from t_destroy_order
+    </sql>
+
+    <select id="selectDestroyOrderList" parameterType="DestroyOrder"
+            resultMap="DestroyOrderResult">
+        <include refid="selectDestroyOrderVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="payStatus != null  and payStatus != ''"> and pay_status = #{payStatus}</if>
+            <if test="hash != null  and hash != ''"> and hash = #{hash}</if>
+            <if test="createDate != null "> and create_date = #{createDate}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="days != null "> and days = #{days}</if>
+            <if test="usdtValue != null "> and usdt_value = #{usdtValue}</if>
+            <if test="validNum1Value != null "> and valid_num1_value = #{validNum1Value}</if>
+            <if test="lastFtnPrice != null "> and last_ftn_price = #{lastFtnPrice}</if>
+            <if test="haveValidNum1 != null "> and have_valid_num1 = #{haveValidNum1}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+            <if test="payTime != null "> and pay_time = #{payTime}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+            <if test="isReduced != null "> and is_reduced = #{isReduced}</if>
+        </where>
+        order by id desc
+    </select>
+
+
+    <select id="getTodayTeamUsdtValue" resultType="decimal">
+        SELECT
+            COALESCE(SUM(o.usdt_value), 0) AS team_today_performance
+        FROM
+            t_destroy_order o
+            INNER JOIN t_user_relation r
+            ON o.user_id = r.pos_user_id
+        WHERE
+            r.active_flag = 1
+          AND r.par_user_id = #{userId}     -- 这个是团队上级
+          AND r.distance > 0
+          AND o.status in (1)                    -- 只算已生效/已支付订单
+          AND o.create_date = #{intDate};  -- 例如 20251118
+    </select>
+
+    <select id="getMonthTeamUsdtValue" resultType="decimal">
+        SELECT
+            COALESCE(SUM(o.usdt_value), 0) AS team_month_performance
+        FROM
+            t_destroy_order o
+            INNER JOIN t_user_relation r
+                ON o.user_id = r.pos_user_id
+        WHERE
+            r.active_flag = 1
+          AND r.par_user_id = #{userId}
+          AND r.distance > 0
+          AND o.status in (1)
+          AND o.create_date <![CDATA[ >= ]]> #{monthStart}
+          AND o.create_date <![CDATA[ <= ]]> #{monthEnd}
+    </select>
+
+    <!-- 今日团队销毁统计：同时返回 USDT 和 BOOMAI 数量 -->
+    <select id="getTodayTeamStat" resultType="com.xms.dao.entity.dto.TeamDestroyStatDto">
+        SELECT
+            COALESCE(SUM(o.usdt_value), 0)       AS totalUsdt,
+            COALESCE(SUM(o.valid_num1_value), 0) AS totalValidNum1
+        FROM
+            t_destroy_order o
+            INNER JOIN t_user_relation r
+                ON o.user_id = r.pos_user_id
+        WHERE
+            r.active_flag = 1
+          AND r.par_user_id = #{userId}
+          AND r.distance > 0
+          AND o.status IN (1)
+          AND o.create_date = #{intDate}
+    </select>
+
+    <!-- 当月团队销毁统计：同时返回 USDT 和 BOOMAI 数量 -->
+    <select id="getMonthTeamStat" resultType="com.xms.dao.entity.dto.TeamDestroyStatDto">
+        SELECT
+            COALESCE(SUM(o.usdt_value), 0)       AS totalUsdt,
+            COALESCE(SUM(o.valid_num1_value), 0) AS totalValidNum1
+        FROM
+            t_destroy_order o
+            INNER JOIN t_user_relation r
+                ON o.user_id = r.pos_user_id
+        WHERE
+            r.active_flag = 1
+          AND r.par_user_id = #{userId}
+          AND r.distance > 0
+          AND o.status IN (1)
+          AND o.create_date <![CDATA[ >= ]]> #{monthStart}
+          AND o.create_date <![CDATA[ <= ]]> #{monthEnd}
+    </select>
+
+    <select id="userTotalDestroyAmount" resultType="decimal">
+        SELECT
+            COALESCE(SUM(valid_num1_value), 0) AS total_valid_num1
+        FROM
+            t_destroy_order
+        WHERE
+            user_id = #{userId}
+          AND status = 1;
+    </select>
+
+    <select id="totalDestroyAmount" resultType="decimal">
+        SELECT
+            COALESCE(SUM(valid_num1_value), 0) AS total_valid_num1
+        FROM
+            t_destroy_order
+        WHERE status = 1;
+    </select>
+
+    <select id="todayDestroyAmount" resultType="decimal" parameterType="int">
+        SELECT
+            COALESCE(SUM(valid_num1_value), 0) AS total_valid_num1
+        FROM
+            t_destroy_order
+        WHERE
+            status = 1
+          AND create_date = #{today};
+    </select>
+
+    <select id="rewardList" resultType="com.xms.dao.entity.dto.DestroyOrderDto" parameterType="long">
+        select id, days, usdt_value as usdtValue,valid_num1_value as validNum1Value,have_valid_num1 as haveValidNum1,
+               status, create_time as createTime, is_reduced as isReduced from  t_destroy_order
+        where user_id = #{userId} and status = 1
+        order by id desc
+    </select>
+</mapper>

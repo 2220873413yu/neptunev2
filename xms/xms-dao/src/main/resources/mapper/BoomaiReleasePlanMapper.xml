@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.BoomaiReleasePlanMapper">
+
+    <resultMap type="BoomaiReleasePlan" id="BoomaiReleasePlanResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="sourceType"    column="source_type"    />
+        <result property="totalAmount"    column="total_amount"    />
+        <result property="releasedAmount"    column="released_amount"    />
+        <result property="totalDays"    column="total_days"    />
+        <result property="unreleasedDays"    column="unreleased_days"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="remark"    column="remark"    />
+
+        <result property="originDays"    column="origin_days"    />
+        <result property="currentDays"    column="current_days"    />
+        <result property="paidFuelRatio"    column="paid_fuel_ratio"    />
+        <result property="createDate"    column="create_date"    />
+    </resultMap>
+
+    <sql id="selectBoomaiReleasePlanVo">
+        select create_date, remark, origin_days, current_days, paid_fuel_ratio,order_no, id, user_id, source_type, total_amount, released_amount, total_days, unreleased_days, status, create_time, update_time from t_boomai_release_plan
+    </sql>
+
+    <select id="selectBoomaiReleasePlanList" parameterType="BoomaiReleasePlan"
+            resultMap="BoomaiReleasePlanResult">
+        <include refid="selectBoomaiReleasePlanVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="sourceType != null "> and source_type = #{sourceType}</if>
+            <if test="createDate != null "> and create_date = #{createDate}</if>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="totalAmount != null "> and total_amount = #{totalAmount}</if>
+            <if test="releasedAmount != null "> and released_amount = #{releasedAmount}</if>
+            <if test="totalDays != null "> and total_days = #{totalDays}</if>
+            <if test="unreleasedDays != null "> and unreleased_days = #{unreleasedDays}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+
+    <select id="getMyInterestPacks" parameterType="long" resultType="com.xms.dao.entity.dto.InterestPackDto">
+        select paid_fuel_ratio as paidFuelRatio, id, order_no as orderNo, unreleased_days as unreleasedDays, total_amount as totalAmount,
+               released_amount as releasedAmount, total_days as totalDays, create_time as createTime from t_boomai_release_plan
+        where user_id = #{userId} and status = 0
+        order by id desc
+    </select>
+</mapper>

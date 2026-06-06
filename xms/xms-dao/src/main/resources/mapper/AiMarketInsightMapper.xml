@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.AiMarketInsightMapper">
+
+    <resultMap type="AiMarketInsight" id="AiMarketInsightResult">
+        <result property="id"    column="id"    />
+        <result property="title"    column="title"    />
+        <result property="subTitle"    column="sub_title"    />
+        <result property="content"    column="content"    />
+        <result property="status"    column="status"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="type"    column="type"    />
+        <result property="image"    column="image"    />
+        <result property="contentImage"    column="content_image"    />
+    </resultMap>
+
+    <sql id="selectAiMarketInsightVo">
+        select id, title, sub_title, content, status, create_by, create_time, update_by, update_time, remark, type, image, content_image from t_ai_market_insight
+    </sql>
+
+    <select id="selectAiMarketInsightList" parameterType="AiMarketInsight"
+            resultMap="AiMarketInsightResult">
+        select id, title, sub_title, status, create_by, create_time, update_by, update_time, remark, type, image, content_image from t_ai_market_insight
+        <where>
+            <if test="title != null  and title != ''"> and title = #{title}</if>
+            <if test="subTitle != null  and subTitle != ''"> and sub_title = #{subTitle}</if>
+            <if test="content != null  and content != ''"> and content = #{content}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="image != null  and image != ''"> and image = #{image}</if>
+            <if test="contentImage != null  and contentImage != ''"> and content_image = #{contentImage}</if>
+        </where>
+        order by id desc
+    </select>
+
+    <delete id="deleteRecordById">
+        delete from t_ai_market_insight where id in
+        <foreach item="id" collection="list" separator="," open="(" close=")" index="">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

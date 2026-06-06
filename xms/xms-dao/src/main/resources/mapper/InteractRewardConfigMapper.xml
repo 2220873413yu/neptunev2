@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.InteractRewardConfigMapper">
+
+    <resultMap type="InteractRewardConfig" id="InteractRewardConfigResult">
+        <result property="id"    column="id"    />
+        <result property="level"    column="level"    />
+        <result property="rewardRatio"    column="reward_ratio"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectInteractRewardConfigVo">
+        select id, level, reward_ratio, remark, create_time, update_time from t_interact_reward_config
+    </sql>
+
+    <select id="selectInteractRewardConfigList" parameterType="InteractRewardConfig"
+            resultMap="InteractRewardConfigResult">
+        <include refid="selectInteractRewardConfigVo"/>
+        <where>
+            <if test="level != null "> and level = #{level}</if>
+            <if test="rewardRatio != null "> and reward_ratio = #{rewardRatio}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

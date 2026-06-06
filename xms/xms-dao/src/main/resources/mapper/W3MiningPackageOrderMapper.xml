@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3MiningPackageOrderMapper">
+
+    <resultMap type="W3MiningPackageOrder" id="W3MiningPackageOrderResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="days"    column="days"    />
+        <result property="haveDays"    column="have_days"    />
+        <result property="type"    column="type"    />
+        <result property="payValidNum1"    column="pay_valid_num1"    />
+        <result property="payValidNum2"    column="pay_valid_num2"    />
+        <result property="payValidNum3"    column="pay_valid_num3"    />
+        <result property="usdtValue"    column="usdt_value"    />
+        <result property="fsnValue"    column="fsn_value"    />
+        <result property="dayRatio"    column="day_ratio"    />
+        <result property="parentDayRatio"    column="parent_day_ratio"    />
+        <result property="multipliedValue"    column="multiplied_value"    />
+        <result property="fsnMultipliedValue"    column="fsn_multiplied_value"    />
+        <result property="haveFsnMultipliedValue"    column="have_fsn_multiplied_value"    />
+        <result property="validNum3"    column="valid_num3"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="remark"    column="remark"    />
+        <result property="status"    column="status"    />
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="miningPackageId"    column="mining_package_id"    />
+        <result property="totalReward"    column="total_reward"    />
+        <result property="haveFsnValue"    column="have_fsn_value"    />
+        <result property="lastFtnPrice"    column="last_ftn_price"    />
+    </resultMap>
+
+    <sql id="selectW3MiningPackageOrderVo">
+        select biz_status, last_ftn_price, have_fsn_value, total_reward, have_fsn_multiplied_value, have_days, mining_package_id, status, id, order_no, user_id, days, type, pay_valid_num1, pay_valid_num2, pay_valid_num3, usdt_value, fsn_value, day_ratio, parent_day_ratio, multiplied_value, fsn_multiplied_value, valid_num3, create_time, update_time, deleted, remark from t_w3_mining_package_order
+    </sql>
+
+    <select id="selectW3MiningPackageOrderList" parameterType="W3MiningPackageOrder"
+            resultMap="W3MiningPackageOrderResult">
+        <include refid="selectW3MiningPackageOrderVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+            <if test="miningPackageId != null "> and mining_package_id = #{miningPackageId}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="days != null "> and days = #{days}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="payValidNum1 != null "> and pay_valid_num1 = #{payValidNum1}</if>
+            <if test="payValidNum2 != null "> and pay_valid_num2 = #{payValidNum2}</if>
+            <if test="payValidNum3 != null "> and pay_valid_num3 = #{payValidNum3}</if>
+            <if test="usdtValue != null "> and usdt_value = #{usdtValue}</if>
+            <if test="fsnValue != null "> and fsn_value = #{fsnValue}</if>
+            <if test="dayRatio != null "> and day_ratio = #{dayRatio}</if>
+            <if test="parentDayRatio != null "> and parent_day_ratio = #{parentDayRatio}</if>
+            <if test="multipliedValue != null "> and multiplied_value = #{multipliedValue}</if>
+            <if test="fsnMultipliedValue != null "> and fsn_multiplied_value = #{fsnMultipliedValue}</if>
+            <if test="validNum3 != null "> and valid_num3 = #{validNum3}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

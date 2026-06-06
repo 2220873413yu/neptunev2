@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.WealthVaultStageConfigMapper">
+
+    <resultMap type="WealthVaultStageConfig" id="WealthVaultStageConfigResult">
+        <result property="id"    column="id"    />
+        <result property="stageNo"    column="stage_no"    />
+        <result property="unlockPrice"    column="unlock_price"    />
+        <result property="stageName"    column="stage_name"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectWealthVaultStageConfigVo">
+        select id, stage_no, unlock_price, stage_name, remark, create_time, update_time from t_wealth_vault_stage_config
+    </sql>
+
+    <select id="selectWealthVaultStageConfigList" parameterType="WealthVaultStageConfig"
+            resultMap="WealthVaultStageConfigResult">
+        <include refid="selectWealthVaultStageConfigVo"/>
+        <where>
+            <if test="stageNo != null "> and stage_no = #{stageNo}</if>
+            <if test="unlockPrice != null "> and unlock_price = #{unlockPrice}</if>
+            <if test="stageName != null  and stageName != ''"> and stage_name like concat('%', #{stageName}, '%')</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

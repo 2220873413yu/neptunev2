@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserIncomeSummaryMapper">
+
+    <resultMap type="UserIncomeSummary" id="UserIncomeSummaryResult">
+        <result property="userId"    column="user_id"    />
+        <result property="sourceType21Balance0"    column="source_type21_balance0"    />
+        <result property="sourceType21Balance1"    column="source_type21_balance1"    />
+        <result property="sourceType23Balance"    column="source_type23_balance"    />
+        <result property="sourceType24Balance"    column="source_type24_balance"    />
+        <result property="sourceType25Balance"    column="source_type25_balance"    />
+        <result property="deleted"    column="deleted"    />
+    </resultMap>
+
+    <sql id="selectUserIncomeSummaryVo">
+        select user_id, source_type21_balance0, source_type21_balance1, source_type23_balance, source_type24_balance, source_type25_balance,deleted from t_user_income_summary
+    </sql>
+
+    <select id="selectUserIncomeSummaryList" parameterType="UserIncomeSummary"
+            resultMap="UserIncomeSummaryResult">
+        <include refid="selectUserIncomeSummaryVo"/>
+        <where>
+            deleted = 0
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="sourceType21Balance0 != null "> and source_type21_balance0 = #{sourceType21Balance0}</if>
+            <if test="sourceType21Balance1 != null "> and source_type21_balance1 = #{sourceType21Balance1}</if>
+            <if test="sourceType23Balance != null "> and source_type23_balance = #{sourceType23Balance}</if>
+            <if test="sourceType24Balance != null "> and source_type24_balance = #{sourceType24Balance}</if>
+            <if test="sourceType25Balance != null "> and source_type25_balance = #{sourceType25Balance}</if>
+        </where>
+        order by user_id desc
+    </select>
+
+</mapper>

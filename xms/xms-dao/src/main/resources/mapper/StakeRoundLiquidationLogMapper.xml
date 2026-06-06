@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.StakeRoundLiquidationLogMapper">
+
+    <resultMap type="StakeRoundLiquidationLog" id="StakeRoundLiquidationLogResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="stakeRoundId"    column="stake_round_id"    />
+        <result property="actionType"    column="action_type"    />
+        <result property="checkLeftValue"    column="check_left_value"    />
+        <result property="checkRightValue"    column="check_right_value"    />
+        <result property="isTriggered"    column="is_triggered"    />
+        <result property="ruleExpr"    column="rule_expr"    />
+        <result property="operator"    column="operator"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectStakeRoundLiquidationLogVo">
+        select id, order_no, stake_round_id, action_type, check_left_value, check_right_value, is_triggered, rule_expr, operator, remark, create_time from t_stake_round_liquidation_log
+    </sql>
+
+    <select id="selectStakeRoundLiquidationLogList" parameterType="StakeRoundLiquidationLog"
+            resultMap="StakeRoundLiquidationLogResult">
+        <include refid="selectStakeRoundLiquidationLogVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
+            <if test="actionType != null "> and action_type = #{actionType}</if>
+            <if test="checkLeftValue != null "> and check_left_value = #{checkLeftValue}</if>
+            <if test="checkRightValue != null "> and check_right_value = #{checkRightValue}</if>
+            <if test="isTriggered != null "> and is_triggered = #{isTriggered}</if>
+            <if test="ruleExpr != null  and ruleExpr != ''"> and rule_expr = #{ruleExpr}</if>
+            <if test="operator != null  and operator != ''"> and operator = #{operator}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

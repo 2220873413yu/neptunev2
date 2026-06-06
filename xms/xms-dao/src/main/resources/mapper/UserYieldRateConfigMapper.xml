@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserYieldRateConfigMapper">
+
+    <resultMap type="UserYieldRateConfig" id="UserYieldRateConfigResult">
+        <result property="id"    column="id"    />
+        <result property="initialDailyRate"    column="initial_daily_rate"    />
+        <result property="minDailyRate"    column="min_daily_rate"    />
+        <result property="maxDailyRate"    column="max_daily_rate"    />
+        <result property="growthConsecutiveDays"    column="growth_consecutive_days"    />
+        <result property="growthRateStep"    column="growth_rate_step"    />
+        <result property="decayWithdrawThresholdRatio"    column="decay_withdraw_threshold_ratio"    />
+        <result property="decayRateStep"    column="decay_rate_step"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectUserYieldRateConfigVo">
+        select id, initial_daily_rate, min_daily_rate, max_daily_rate, growth_consecutive_days, growth_rate_step, decay_withdraw_threshold_ratio, decay_rate_step, remark, create_time, update_time, deleted, create_by, update_by from t_user_yield_rate_config
+    </sql>
+
+    <select id="selectUserYieldRateConfigList" parameterType="UserYieldRateConfig"
+            resultMap="UserYieldRateConfigResult">
+        <include refid="selectUserYieldRateConfigVo"/>
+        <where>
+            <if test="initialDailyRate != null "> and initial_daily_rate = #{initialDailyRate}</if>
+            <if test="minDailyRate != null "> and min_daily_rate = #{minDailyRate}</if>
+            <if test="maxDailyRate != null "> and max_daily_rate = #{maxDailyRate}</if>
+            <if test="growthConsecutiveDays != null "> and growth_consecutive_days = #{growthConsecutiveDays}</if>
+            <if test="growthRateStep != null "> and growth_rate_step = #{growthRateStep}</if>
+            <if test="decayWithdrawThresholdRatio != null "> and decay_withdraw_threshold_ratio = #{decayWithdrawThresholdRatio}</if>
+            <if test="decayRateStep != null "> and decay_rate_step = #{decayRateStep}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

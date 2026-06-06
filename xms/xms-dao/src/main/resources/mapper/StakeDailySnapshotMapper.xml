@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.StakeDailySnapshotMapper">
+
+    <resultMap type="StakeDailySnapshot" id="StakeDailySnapshotResult">
+        <result property="id"    column="id"    />
+        <result property="insuranceBalance"    column="insurance_balance"    />
+        <result property="playerStakeTotal"    column="player_stake_total"    />
+        <result property="studioSubsidyTotal"    column="studio_subsidy_total"    />
+        <result property="withdrawRewardTotalFull"    column="withdraw_reward_total_full"    />
+        <result property="buyPointTotal"    column="buy_point_total"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="stakeRoundId"    column="stake_round_id"    />
+        <result property="lockedValidNum4"    column="locked_valid_num4"    />
+        <result property="totalValidNum4"    column="total_valid_num4"    />
+        <result property="withdrawContractBalance"    column="withdraw_contract_balance"    />
+    </resultMap>
+
+    <sql id="selectStakeDailySnapshotVo">
+        select id, insurance_balance, player_stake_total, studio_subsidy_total, withdraw_reward_total_full, buy_point_total, remark, create_time, update_time, stake_round_id, locked_valid_num4, total_valid_num4, withdraw_contract_balance from t_stake_daily_snapshot
+    </sql>
+
+    <select id="selectStakeDailySnapshotList" parameterType="StakeDailySnapshot"
+            resultMap="StakeDailySnapshotResult">
+        <include refid="selectStakeDailySnapshotVo"/>
+        <where>
+            <if test="insuranceBalance != null "> and insurance_balance = #{insuranceBalance}</if>
+            <if test="playerStakeTotal != null "> and player_stake_total = #{playerStakeTotal}</if>
+            <if test="studioSubsidyTotal != null "> and studio_subsidy_total = #{studioSubsidyTotal}</if>
+            <if test="withdrawRewardTotalFull != null "> and withdraw_reward_total_full = #{withdrawRewardTotalFull}</if>
+            <if test="buyPointTotal != null "> and buy_point_total = #{buyPointTotal}</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+            <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
+            <if test="lockedValidNum4 != null "> and locked_valid_num4 = #{lockedValidNum4}</if>
+            <if test="totalValidNum4 != null "> and total_valid_num4 = #{totalValidNum4}</if>
+            <if test="withdrawContractBalance != null "> and withdraw_contract_balance = #{withdrawContractBalance}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

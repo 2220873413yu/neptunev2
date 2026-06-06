@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.WithdrawalConfigMapper">
+
+    <resultMap type="WithdrawalConfig" id="WithdrawalConfigResult">
+        <result property="id"    column="id"    />
+        <result property="coinType"    column="coin_type"    />
+        <result property="withdrawOpen"    column="withdraw_open"    />
+        <result property="minWithdrawAmount"    column="min_withdraw_amount"    />
+        <result property="feeRatio"    column="fee_ratio"    />
+        <result property="wealthVaultRatio"    column="wealth_vault_ratio"    />
+        <result property="insuranceVaultRatio"    column="insurance_vault_ratio"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+
+        <result property="dailyFreeAuditCount"    column="daily_free_audit_count"    />
+        <result property="withdrawLimit"    column="withdraw_limit"    />
+    </resultMap>
+
+    <sql id="selectWithdrawalConfigVo">
+        select daily_free_audit_count, withdraw_limit, id, coin_type, withdraw_open, min_withdraw_amount, fee_ratio, wealth_vault_ratio, insurance_vault_ratio, create_time, update_time, remark from t_withdrawal_config
+    </sql>
+
+    <select id="selectWithdrawalConfigList" parameterType="WithdrawalConfig"
+            resultMap="WithdrawalConfigResult">
+        <include refid="selectWithdrawalConfigVo"/>
+        <where>
+            <if test="coinType != null "> and coin_type = #{coinType}</if>
+            <if test="withdrawOpen != null "> and withdraw_open = #{withdrawOpen}</if>
+            <if test="minWithdrawAmount != null "> and min_withdraw_amount = #{minWithdrawAmount}</if>
+            <if test="feeRatio != null "> and fee_ratio = #{feeRatio}</if>
+            <if test="wealthVaultRatio != null "> and wealth_vault_ratio = #{wealthVaultRatio}</if>
+            <if test="insuranceVaultRatio != null "> and insurance_vault_ratio = #{insuranceVaultRatio}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

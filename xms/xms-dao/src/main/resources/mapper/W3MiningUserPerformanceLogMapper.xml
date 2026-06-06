@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3MiningUserPerformanceLogMapper">
+
+    <resultMap type="W3MiningUserPerformanceLog" id="W3MiningUserPerformanceLogResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="performance"    column="performance"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="ids"    column="ids"    />
+        <result property="usdtValuds"    column="usdt_valuds"    />
+    </resultMap>
+
+    <sql id="selectW3MiningUserPerformanceLogVo">
+        select id, user_id, performance, order_no, biz_status, create_time, update_time, ids, usdt_valuds from t_w3_mining_user_performance_log
+    </sql>
+
+    <select id="selectW3MiningUserPerformanceLogList" parameterType="W3MiningUserPerformanceLog"
+            resultMap="W3MiningUserPerformanceLogResult">
+        <include refid="selectW3MiningUserPerformanceLogVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="performance != null "> and performance = #{performance}</if>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+            <if test="ids != null  and ids != ''"> and ids = #{ids}</if>
+            <if test="usdtValuds != null  and usdtValuds != ''"> and usdt_valuds = #{usdtValuds}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3UserRecommendRewardConfigMapper">
+
+    <resultMap type="W3UserRecommendRewardConfig" id="W3UserRecommendRewardConfigResult">
+        <result property="id"    column="id"    />
+        <result property="level"    column="level"    />
+        <result property="rewardRatio"    column="reward_ratio"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectW3UserRecommendRewardConfigVo">
+        select id, level, reward_ratio, create_time, update_time, remark, deleted, create_by, update_by from t_w3_user_recommend_reward_config
+    </sql>
+
+    <select id="selectW3UserRecommendRewardConfigList" parameterType="W3UserRecommendRewardConfig"
+            resultMap="W3UserRecommendRewardConfigResult">
+        <include refid="selectW3UserRecommendRewardConfigVo"/>
+        <where>
+            <if test="level != null "> and level = #{level}</if>
+            <if test="rewardRatio != null "> and reward_ratio = #{rewardRatio}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

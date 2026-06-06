@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.ActiveOrderMapper">
+
+    <resultMap type="ActiveOrder" id="ActiveOrderResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="activationCount"    column="activation_count"    />
+        <result property="amount"    column="amount"    />
+        <result property="txHash"    column="tx_hash"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="lockExpireAt"    column="lock_expire_at"    />
+    </resultMap>
+
+    <sql id="selectActiveOrderVo">
+        select lock_expire_at, id, order_no, user_id, activation_count, amount, tx_hash, create_time, biz_status, update_time from t_active_order
+    </sql>
+
+    <select id="selectActiveOrderList" parameterType="ActiveOrder"
+            resultMap="ActiveOrderResult">
+        <include refid="selectActiveOrderVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="txHash != null  and txHash != ''"> and tx_hash = #{txHash}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

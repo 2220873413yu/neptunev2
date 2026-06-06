@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.CardMasterOrderMapper">
+
+    <resultMap type="CardMasterOrder" id="CardMasterOrderResult">
+        <result property="id"    column="id"    />
+        <result property="masterOrderNo"    column="master_order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="payAmount"    column="pay_amount"    />
+        <result property="computingPower"    column="computing_power"    />
+        <result property="extraComputingPower"    column="extra_computing_power"    />
+        <result property="cardType"    column="card_type"    />
+        <result property="buyNum"    column="buy_num"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="snapshotJson"    column="snapshot_json"    />
+
+
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="sourceType"    column="source_type"    />
+        <result property="beforeCardType"    column="before_card_type"    />
+        <result property="packagePower"    column="package_power"    />
+    </resultMap>
+
+    <sql id="selectCardMasterOrderVo">
+        select package_power, extra_computing_power, before_card_type, source_type, biz_status, id, master_order_no, user_id, pay_amount, computing_power, card_type, buy_num, create_time, update_time from t_card_master_order
+    </sql>
+
+    <select id="selectCardMasterOrderList" parameterType="CardMasterOrder"
+            resultMap="CardMasterOrderResult">
+        <include refid="selectCardMasterOrderVo"/>
+        <where>
+            <if test="masterOrderNo != null  and masterOrderNo != ''"> and master_order_no = #{masterOrderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="beforeCardType != null "> and before_card_type = #{beforeCardType}</if>
+            <if test="sourceType != null "> and source_type = #{sourceType}</if>
+            <if test="payAmount != null "> and pay_amount = #{payAmount}</if>
+            <if test="computingPower != null "> and computing_power = #{computingPower}</if>
+            <if test="cardType != null "> and card_type = #{cardType}</if>
+            <if test="buyNum != null "> and buy_num = #{buyNum}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="snapshotJson != null  and snapshotJson != ''"> and snapshot_json = #{snapshotJson}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

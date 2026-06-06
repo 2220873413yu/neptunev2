@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserStakePositionMapper">
+
+    <resultMap type="UserStakePosition" id="UserStakePositionResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="totalStakeAmount"    column="total_stake_amount"    />
+        <result property="currentDayRate"    column="current_day_rate"    />
+        <result property="continuousNoWithdrawDays"    column="continuous_no_withdraw_days"    />
+        <result property="totalReward"    column="total_reward"    />
+        <result property="todayReward"    column="today_reward"    />
+        <result property="lastSettleDate"    column="last_settle_date"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="stakeRoundId"    column="stake_round_id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="dynamicReward"    column="dynamic_reward"    />
+        <result property="studioSubsidy"    column="studio_subsidy"    />
+
+
+        <result property="totalWithdrawalStatic"    column="total_withdrawal_static"    />
+        <result property="totalWithdrawalDynamic"    column="total_withdrawal_dynamic"    />
+        <result property="totalWithdrawalStudioSubsidy"    column="total_withdrawal_studio_subsidy"    />
+
+        <result property="personalLossAmount"    column="personal_loss_amount"    />
+        <result property="remainingCompensationLimit"    column="remaining_compensation_limit"    />
+        <result property="allCompensationLimit"    column="all_compensation_limit"    />
+        <result property="insuranceQualifyStatus"    column="insurance_qualify_status"    />
+        <result property="insuranceCompensationQualifyStatus"    column="insurance_compensation_qualify_status"    />
+        <result property="rateDeductedWithdrawAmount"    column="rate_deducted_withdraw_amount"    />
+    </resultMap>
+
+    <sql id="selectUserStakePositionVo">
+        select rate_deducted_withdraw_amount, all_compensation_limit, total_withdrawal_studio_subsidy, total_withdrawal_static, total_withdrawal_dynamic,insurance_qualify_status, insurance_compensation_qualify_status, remaining_compensation_limit, personal_loss_amount, dynamic_reward, studio_subsidy, order_no, id, user_id, total_stake_amount, current_day_rate, continuous_no_withdraw_days, total_reward, today_reward, last_settle_date, status, create_time, update_time, stake_round_id from t_user_stake_position
+    </sql>
+
+    <select id="selectUserStakePositionList" parameterType="UserStakePosition"
+            resultMap="UserStakePositionResult">
+        <include refid="selectUserStakePositionVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="insuranceCompensationQualifyStatus != null "> and insurance_compensation_qualify_status = #{insuranceCompensationQualifyStatus}</if>
+            <if test="orderNo != null "> and order_no = #{orderNo}</if>
+            <if test="insuranceQualifyStatus != null "> and insurance_qualify_status = #{insuranceQualifyStatus}</if>
+            <if test="totalStakeAmount != null "> and total_stake_amount = #{totalStakeAmount}</if>
+            <if test="currentDayRate != null "> and current_day_rate = #{currentDayRate}</if>
+            <if test="continuousNoWithdrawDays != null "> and continuous_no_withdraw_days = #{continuousNoWithdrawDays}</if>
+            <if test="totalReward != null "> and total_reward = #{totalReward}</if>
+            <if test="todayReward != null "> and today_reward = #{todayReward}</if>
+            <if test="lastSettleDate != null "> and last_settle_date = #{lastSettleDate}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

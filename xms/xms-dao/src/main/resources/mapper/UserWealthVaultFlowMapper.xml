@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserWealthVaultFlowMapper">
+
+    <resultMap type="UserWealthVaultFlow" id="UserWealthVaultFlowResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="segNo"    column="seg_no"    />
+        <result property="sourceType"    column="source_type"    />
+        <result property="sourceOrderNo"    column="source_order_no"    />
+        <result property="changeAmount"    column="change_amount"    />
+        <result property="beforeAmount"    column="before_amount"    />
+        <result property="afterAmount"    column="after_amount"    />
+        <result property="triggerPrice"    column="trigger_price"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectUserWealthVaultFlowVo">
+        select id, user_id, seg_no, source_type, source_order_no, change_amount, before_amount, after_amount, trigger_price, remark, create_time from t_user_wealth_vault_flow
+    </sql>
+
+    <select id="selectUserWealthVaultFlowList" parameterType="UserWealthVaultFlow"
+            resultMap="UserWealthVaultFlowResult">
+        <include refid="selectUserWealthVaultFlowVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="segNo != null "> and seg_no = #{segNo}</if>
+            <if test="sourceType != null "> and source_type = #{sourceType}</if>
+            <if test="sourceOrderNo != null  and sourceOrderNo != ''"> and source_order_no = #{sourceOrderNo}</if>
+            <if test="changeAmount != null "> and change_amount = #{changeAmount}</if>
+            <if test="beforeAmount != null "> and before_amount = #{beforeAmount}</if>
+            <if test="afterAmount != null "> and after_amount = #{afterAmount}</if>
+            <if test="triggerPrice != null "> and trigger_price = #{triggerPrice}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

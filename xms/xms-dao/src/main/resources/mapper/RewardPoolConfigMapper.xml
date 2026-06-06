@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.RewardPoolConfigMapper">
+
+    <resultMap type="RewardPoolConfig" id="RewardPoolConfigResult">
+        <result property="id"    column="id"    />
+        <result property="poolType"    column="pool_type"    />
+        <result property="poolName"    column="pool_name"    />
+        <result property="staticRatio"    column="static_ratio"    />
+        <result property="dynamicRatio"    column="dynamic_ratio"    />
+        <result property="dailyOutput"    column="daily_output"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectRewardPoolConfigVo">
+        select id, pool_type, pool_name, static_ratio, dynamic_ratio, daily_output, remark, create_time, update_time from t_reward_pool_config
+    </sql>
+
+    <select id="selectRewardPoolConfigList" parameterType="RewardPoolConfig"
+            resultMap="RewardPoolConfigResult">
+        <include refid="selectRewardPoolConfigVo"/>
+        <where>
+            <if test="poolType != null "> and pool_type = #{poolType}</if>
+            <if test="poolName != null  and poolName != ''"> and pool_name like concat('%', #{poolName}, '%')</if>
+            <if test="staticRatio != null "> and static_ratio = #{staticRatio}</if>
+            <if test="dynamicRatio != null "> and dynamic_ratio = #{dynamicRatio}</if>
+            <if test="dailyOutput != null "> and daily_output = #{dailyOutput}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

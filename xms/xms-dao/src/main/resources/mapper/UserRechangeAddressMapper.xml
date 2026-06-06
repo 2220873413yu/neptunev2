@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserRechangeAddressMapper">
+
+    <resultMap type="UserRechangeAddress" id="UserRechangeAddressResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="chainId"    column="chain_id"    />
+        <result property="address"    column="address"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectUserRechangeAddressVo">
+        select id, user_id, chain_id, address, create_time from t_user_rechange_address
+    </sql>
+
+    <select id="selectUserRechangeAddressList" parameterType="UserRechangeAddress"
+            resultMap="UserRechangeAddressResult">
+        <include refid="selectUserRechangeAddressVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="chainId != null "> and chain_id = #{chainId}</if>
+            <if test="address != null  and address != ''"> and address = #{address}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

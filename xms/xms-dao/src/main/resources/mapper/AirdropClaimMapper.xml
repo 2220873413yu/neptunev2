@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.AirdropClaimMapper">
+
+    <resultMap type="AirdropClaim" id="AirdropClaimResult">
+        <result property="id"    column="id"    />
+        <result property="claimNo"    column="claim_no"    />
+        <result property="roundNo"    column="round_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="status"    column="status"    />
+        <result property="lockExpireAt"    column="lock_expire_at"    />
+        <result property="tokenAmount"    column="token_amount"    />
+        <result property="txHash"    column="tx_hash"    />
+        <result property="payToken"    column="pay_token"    />
+        <result property="payAmount"    column="pay_amount"    />
+        <result property="lockedAt"    column="locked_at"    />
+        <result property="completedAt"    column="completed_at"    />
+        <result property="releaseReason"    column="release_reason"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="createDate"    column="create_date"    />
+        <result property="okbPayAmount"    column="okb_pay_amount"    />
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="bizStatus1"    column="biz_status1"    />
+    </resultMap>
+
+    <sql id="selectAirdropClaimVo">
+        select biz_status1, biz_status, okb_pay_amount, create_date, id, claim_no, round_no, user_id, status, lock_expire_at, token_amount, tx_hash, pay_token, pay_amount, locked_at, completed_at, release_reason, remark, create_time, update_time from t_airdrop_claim
+    </sql>
+
+    <select id="selectAirdropClaimList" parameterType="AirdropClaim"
+            resultMap="AirdropClaimResult">
+        <include refid="selectAirdropClaimVo"/>
+        <where>
+            <if test="claimNo != null  and claimNo != ''"> and claim_no = #{claimNo}</if>
+            <if test="bizStatus != null  and bizStatus != ''"> and biz_status = #{bizStatus}</if>
+            <if test="createDate != null  and createDate != ''"> and create_date = #{createDate}</if>
+            <if test="roundNo != null "> and round_no = #{roundNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="lockExpireAt != null "> and lock_expire_at = #{lockExpireAt}</if>
+            <if test="tokenAmount != null "> and token_amount = #{tokenAmount}</if>
+            <if test="txHash != null  and txHash != ''"> and tx_hash = #{txHash}</if>
+            <if test="payToken != null  and payToken != ''"> and pay_token = #{payToken}</if>
+            <if test="payAmount != null "> and pay_amount = #{payAmount}</if>
+            <if test="lockedAt != null "> and locked_at = #{lockedAt}</if>
+            <if test="completedAt != null "> and completed_at = #{completedAt}</if>
+            <if test="releaseReason != null  and releaseReason != ''"> and release_reason = #{releaseReason}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

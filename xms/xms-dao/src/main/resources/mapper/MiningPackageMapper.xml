@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.MiningPackageMapper">
+
+    <resultMap type="MiningPackage" id="MiningPackageResult">
+        <result property="id"    column="id"    />
+        <result property="nameCn"    column="name_cn"    />
+        <result property="type"    column="type"    />
+        <result property="day"    column="day"    />
+        <result property="dayRatio"    column="day_ratio"    />
+        <result property="buyNum"    column="buy_num"    />
+        <result property="minBuyPrice"    column="min_buy_price"    />
+        <result property="maxBuyPrice"    column="max_buy_price"    />
+        <result property="dailyPenaltyReduction"    column="daily_penalty_reduction"    />
+        <result property="penaltyRate"    column="penalty_rate"    />
+        <result property="minPenaltyRate"    column="min_penalty_rate"    />
+        <result property="nameHk"    column="name_hk"    />
+        <result property="nameEn"    column="name_en"    />
+        <result property="nameJa"    column="name_ja"    />
+        <result property="nameKr"    column="name_kr"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="sort"    column="sort"    />
+        <result property="descriptionCn"    column="description_cn"    />
+        <result property="descriptionHk"    column="description_hk"    />
+        <result property="descriptionEn"    column="description_en"    />
+        <result property="descriptionJa"    column="description_ja"    />
+        <result property="descriptionKr"    column="description_kr"    />
+    </resultMap>
+
+    <sql id="selectMiningPackageVo">
+        select max_buy_price, min_penalty_rate, id, name_cn, type, day, day_ratio, buy_num, min_buy_price, daily_penalty_reduction, penalty_rate, name_hk, name_en, name_ja, name_kr, status, create_time, update_time, sort, description_cn, description_hk, description_en, description_ja, description_kr from t_mining_package
+    </sql>
+
+    <select id="selectMiningPackageList" parameterType="MiningPackage"
+            resultMap="MiningPackageResult">
+        <include refid="selectMiningPackageVo"/>
+        <where>
+            <if test="nameCn != null  and nameCn != ''"> and name_cn = #{nameCn}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="day != null "> and day = #{day}</if>
+            <if test="dayRatio != null "> and day_ratio = #{dayRatio}</if>
+            <if test="buyNum != null  and buyNum != ''"> and buy_num = #{buyNum}</if>
+            <if test="minBuyPrice != null "> and min_buy_price = #{minBuyPrice}</if>
+            <if test="dailyPenaltyReduction != null "> and daily_penalty_reduction = #{dailyPenaltyReduction}</if>
+            <if test="penaltyRate != null "> and penalty_rate = #{penaltyRate}</if>
+            <if test="nameHk != null  and nameHk != ''"> and name_hk = #{nameHk}</if>
+            <if test="nameEn != null  and nameEn != ''"> and name_en = #{nameEn}</if>
+            <if test="nameJa != null  and nameJa != ''"> and name_ja = #{nameJa}</if>
+            <if test="nameKr != null  and nameKr != ''"> and name_kr = #{nameKr}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="sort != null "> and sort = #{sort}</if>
+            <if test="descriptionCn != null  and descriptionCn != ''"> and description_cn = #{descriptionCn}</if>
+            <if test="descriptionHk != null  and descriptionHk != ''"> and description_hk = #{descriptionHk}</if>
+            <if test="descriptionEn != null  and descriptionEn != ''"> and description_en = #{descriptionEn}</if>
+            <if test="descriptionJa != null  and descriptionJa != ''"> and description_ja = #{descriptionJa}</if>
+            <if test="descriptionKr != null  and descriptionKr != ''"> and description_kr = #{descriptionKr}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

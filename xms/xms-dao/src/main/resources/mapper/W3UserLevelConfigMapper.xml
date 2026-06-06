@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3UserLevelConfigMapper">
+
+    <resultMap type="W3UserLevelConfig" id="W3UserLevelConfigResult">
+        <result property="id"    column="id"    />
+        <result property="level"    column="level"    />
+        <result property="performance"    column="performance"    />
+        <result property="umbrellaPerformance"    column="umbrella_performance"    />
+        <result property="isUmbrellaLevel"    column="is_umbrella_level"    />
+        <result property="umbrellaCount"    column="umbrella_count"    />
+        <result property="umbrellaLevel"    column="umbrella_level"    />
+        <result property="rewardRatio"    column="reward_ratio"    />
+        <result property="peerRewardRatio"    column="peer_reward_ratio"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectW3UserLevelConfigVo">
+        select * from t_w3_user_level_config
+    </sql>
+
+    <select id="selectW3UserLevelConfigList" parameterType="W3UserLevelConfig"
+            resultMap="W3UserLevelConfigResult">
+        <include refid="selectW3UserLevelConfigVo"/>
+        <where>
+            <if test="level != null "> and level = #{level}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

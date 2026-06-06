@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.InsuranceOrderMapper">
+
+    <resultMap type="InsuranceOrder" id="InsuranceOrderResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="days"    column="days"    />
+        <result property="haveDays"    column="have_days"    />
+        <result property="dayOutReward"    column="day_out_reward"    />
+        <result property="insuranceBalance"    column="insurance_balance"    />
+        <result property="hsaveInsuranceBalance"    column="hsave_insurance_balance"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="status"    column="status"    />
+        <result property="stakeRoundId"    column="stake_round_id"    />
+    </resultMap>
+
+    <sql id="selectInsuranceOrderVo">
+        select id, order_no, days, have_days, day_out_reward, insurance_balance, hsave_insurance_balance, create_time, update_time, remark, status, stake_round_id from t_insurance_order
+    </sql>
+
+    <select id="selectInsuranceOrderList" parameterType="InsuranceOrder"
+            resultMap="InsuranceOrderResult">
+        <include refid="selectInsuranceOrderVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="days != null "> and days = #{days}</if>
+            <if test="haveDays != null "> and have_days = #{haveDays}</if>
+            <if test="dayOutReward != null "> and day_out_reward = #{dayOutReward}</if>
+            <if test="insuranceBalance != null "> and insurance_balance = #{insuranceBalance}</if>
+            <if test="hsaveInsuranceBalance != null "> and hsave_insurance_balance = #{hsaveInsuranceBalance}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

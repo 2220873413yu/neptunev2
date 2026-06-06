@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.NodePlanOrderMapper">
+
+    <resultMap type="NodePlanOrder" id="NodePlanOrderResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="nodePlanLevel"    column="node_plan_level"    />
+        <result property="amount"    column="amount"    />
+        <result property="txHash"    column="tx_hash"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="paymentTime"    column="payment_time"    />
+        <result property="address"    column="address"    />
+
+        <result property="totalDay"    column="total_day"    />
+        <result property="haveDay"    column="have_day"    />
+        <result property="totalAmount"    column="total_amount"    />
+        <result property="haveAmount"    column="have_amount"    />
+        <result property="remark"    column="remark"    />
+        <result property="annualRate"    column="annual_rate"    />
+        <result property="totalAnnual"    column="total_annual"    />
+    </resultMap>
+
+    <sql id="selectNodePlanOrderVo">
+        select total_annual, annual_rate, remark, total_day, have_day, total_amount, have_amount,address, id, order_no, user_id, node_plan_level, amount, tx_hash, create_time, biz_status, update_time, payment_time from t_node_plan_order
+    </sql>
+
+    <select id="selectNodePlanOrderList" parameterType="NodePlanOrder"
+            resultMap="NodePlanOrderResult">
+        <include refid="selectNodePlanOrderVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="address != null   and address != ''"> and address = #{address}</if>
+            <if test="nodePlanLevel != null "> and node_plan_level = #{nodePlanLevel}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="txHash != null  and txHash != ''"> and tx_hash = #{txHash}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+            <if test="paymentTime != null "> and payment_time = #{paymentTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

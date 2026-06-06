@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3MiningDynamicRewardLogMapper">
+
+    <resultMap type="W3MiningDynamicRewardLog" id="W3MiningDynamicRewardLogResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="changeBalance"    column="change_balance"    />
+        <result property="sourceCode"    column="source_code"    />
+        <result property="sourceType"    column="source_type"    />
+        <result property="sourceId"    column="source_id"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectW3MiningDynamicRewardLogVo">
+        select id, user_id, change_balance, source_code, source_type, source_id, remark, create_time from t_w3_mining_dynamic_reward_log
+    </sql>
+
+    <select id="selectW3MiningDynamicRewardLogList" parameterType="W3MiningDynamicRewardLog"
+            resultMap="W3MiningDynamicRewardLogResult">
+        <include refid="selectW3MiningDynamicRewardLogVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="changeBalance != null "> and change_balance = #{changeBalance}</if>
+            <if test="sourceCode != null  and sourceCode != ''"> and source_code = #{sourceCode}</if>
+            <if test="sourceType != null "> and source_type = #{sourceType}</if>
+            <if test="sourceId != null "> and source_id = #{sourceId}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

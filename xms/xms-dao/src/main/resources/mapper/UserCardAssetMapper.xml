@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserCardAssetMapper">
+
+    <resultMap type="UserCardAsset" id="UserCardAssetResult">
+        <result property="id"    column="id"    />
+        <result property="cardLevel1"    column="card_level1"    />
+        <result property="cardLevel2"    column="card_level2"    />
+        <result property="cardLevel3"    column="card_level3"    />
+        <result property="cardLevel4"    column="card_level4"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectUserCardAssetVo">
+        select id, card_level1, card_level2, card_level3, card_level4, create_time from t_user_card_asset
+    </sql>
+
+    <select id="selectUserCardAssetList" parameterType="UserCardAsset"
+            resultMap="UserCardAssetResult">
+        select tuca.id, tuca.card_level1, tuca.card_level2, tuca.card_level3,
+        tuca.card_level4, tuca.create_time,tui.nick_name nickName, tui.avatar avatar,
+        tui.user_code userCode from t_user_card_asset tuca
+        left join t_user_info tui on tuca.id = tui.user_id
+        <where>
+            <if test="cardLevel1 != null "> and tuca.card_level1 = #{cardLevel1}</if>
+            <if test="cardLevel2 != null "> and tuca.card_level2 = #{cardLevel2}</if>
+            <if test="cardLevel3 != null "> and tuca.card_level3 = #{cardLevel3}</if>
+            <if test="cardLevel4 != null "> and tuca.card_level4 = #{cardLevel4}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+             and tuca.create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

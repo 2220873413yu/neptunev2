@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.WalletTransferOrderMapper">
+
+    <resultMap type="WalletTransferOrder" id="WalletTransferOrderResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="bizType"    column="biz_type"    />
+        <result property="amount"    column="amount"    />
+        <result property="targetAddress1"    column="target_address1"    />
+        <result property="targetAddress2"    column="target_address2"    />
+        <result property="interest"    column="interest"    />
+        <result property="interestRatio"    column="interest_ratio"    />
+        <result property="date"    column="date"    />
+        <result property="endTime"    column="end_time"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="remark"    column="remark"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectWalletTransferOrderVo">
+        select id, order_no, user_id, biz_type, amount, target_address1, target_address2, interest, interest_ratio, date, end_time, create_time, update_time, deleted, remark, status from t_wallet_transfer_order
+    </sql>
+
+    <select id="selectWalletTransferOrderList" parameterType="WalletTransferOrder"
+            resultMap="WalletTransferOrderResult">
+        <include refid="selectWalletTransferOrderVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="bizType != null "> and biz_type = #{bizType}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="targetAddress1 != null  and targetAddress1 != ''"> and target_address1 = #{targetAddress1}</if>
+            <if test="targetAddress2 != null  and targetAddress2 != ''"> and target_address2 = #{targetAddress2}</if>
+            <if test="interest != null "> and interest = #{interest}</if>
+            <if test="interestRatio != null "> and interest_ratio = #{interestRatio}</if>
+            <if test="date != null "> and date = #{date}</if>
+            <if test="endTime != null "> and end_time = #{endTime}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="status != null "> and status = #{status}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

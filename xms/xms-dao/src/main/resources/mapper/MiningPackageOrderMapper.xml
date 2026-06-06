@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.MiningPackageOrderMapper">
+
+    <resultMap type="MiningPackageOrder" id="MiningPackageOrderResult">
+        <result property="id"    column="id"    />
+        <result property="miningPackageId"    column="mining_package_id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="buyPrice"    column="buy_price"    />
+        <result property="days"    column="days"    />
+        <result property="haveDays"    column="have_days"    />
+        <result property="runDays"    column="run_days"    />
+        <result property="currentRunDays"    column="current_run_days"    />
+        <result property="type"    column="type"    />
+        <result property="dayRatio"    column="day_ratio"    />
+        <result property="dayReward"    column="day_reward"    />
+        <result property="totalReward"    column="total_reward"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="status"    column="status"    />
+        <result property="bizStatus"    column="biz_status"    />
+        <result property="dailyPenaltyReduction"    column="daily_penalty_reduction"    />
+        <result property="penaltyRate"    column="penalty_rate"    />
+        <result property="minPenaltyRate"    column="min_penalty_rate"    />
+        <result property="principalReturned"    column="principal_returned"    />
+        <result property="returnedBizStatus"    column="returned_biz_status"    />
+        <result property="returnedTime"    column="returned_time"    />
+        <result property="pointsPerUsdt"    column="points_per_usdt"    />
+        <result property="awaitingAmount"    column="awaiting_amount"    />
+        <result property="sourceType"    column="source_type"    />
+        <result property="maxRunDate"    column="max_run_date"    />
+    </resultMap>
+
+    <sql id="selectMiningPackageOrderVo">
+        select current_run_days, max_run_date, day_reward, min_penalty_rate, points_per_usdt, awaiting_amount, source_type, returned_time, returned_biz_status, id, mining_package_id, order_no, user_id, buy_price, days, have_days, run_days, type, day_ratio, total_reward, create_time, update_time, remark, status, biz_status, daily_penalty_reduction, penalty_rate, principal_returned from t_mining_package_order
+    </sql>
+
+    <select id="selectMiningPackageOrderList" parameterType="MiningPackageOrder"
+            resultMap="MiningPackageOrderResult">
+        <include refid="selectMiningPackageOrderVo"/>
+        <where>
+            <if test="sourceType != null "> and source_type = #{sourceType}</if>
+            <if test="returnedBizStatus != null "> and returned_biz_status = #{returnedBizStatus}</if>
+            <if test="miningPackageId != null "> and mining_package_id = #{miningPackageId}</if>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="buyPrice != null "> and buy_price = #{buyPrice}</if>
+            <if test="days != null "> and days = #{days}</if>
+            <if test="haveDays != null "> and have_days = #{haveDays}</if>
+            <if test="runDays != null "> and run_days = #{runDays}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="dayRatio != null "> and day_ratio = #{dayRatio}</if>
+            <if test="totalReward != null "> and total_reward = #{totalReward}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+            <if test="dailyPenaltyReduction != null "> and daily_penalty_reduction = #{dailyPenaltyReduction}</if>
+            <if test="penaltyRate != null "> and penalty_rate = #{penaltyRate}</if>
+            <if test="principalReturned != null "> and principal_returned = #{principalReturned}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

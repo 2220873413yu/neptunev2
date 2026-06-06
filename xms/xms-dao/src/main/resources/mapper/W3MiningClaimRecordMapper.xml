@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3MiningClaimRecordMapper">
+
+    <resultMap type="W3MiningClaimRecord" id="W3MiningClaimRecordResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="rewardAmount"    column="reward_amount"    />
+        <result property="claimAmount"    column="claim_amount"    />
+        <result property="coinType"    column="coin_type"    />
+        <result property="wfCurrentPrice"    column="wf_current_price"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="remark"    column="remark"    />
+        <result property="sourceType"    column="source_type"    />
+        <result property="fsnCurrentPrice"    column="fsn_current_price"    />
+        <result property="usdtValue"    column="usdt_value"    />
+        <result property="feeAmount"    column="fee_amount"    />
+        <result property="actualAmount"    column="actual_amount"    />
+        <result property="type"    column="type"    />
+    </resultMap>
+
+    <sql id="selectW3MiningClaimRecordVo">
+        select type, actual_amount, fee_amount, usdt_value, fsn_current_price, source_type, id, user_id, order_no, reward_amount, claim_amount, coin_type, wf_current_price, create_time, update_time, deleted, remark from t_w3_mining_claim_record
+    </sql>
+
+    <select id="selectW3MiningClaimRecordList" parameterType="W3MiningClaimRecord"
+            resultMap="W3MiningClaimRecordResult">
+        <include refid="selectW3MiningClaimRecordVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="sourceType != null "> and source_type = #{sourceType}</if>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="rewardAmount != null "> and reward_amount = #{rewardAmount}</if>
+            <if test="claimAmount != null "> and claim_amount = #{claimAmount}</if>
+            <if test="coinType != null "> and coin_type = #{coinType}</if>
+            <if test="wfCurrentPrice != null "> and wf_current_price = #{wfCurrentPrice}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

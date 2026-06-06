@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.PtbDailyPriceMapper">
+
+    <resultMap type="PtbDailyPrice" id="PtbDailyPriceResult">
+        <result property="id"    column="id"    />
+        <result property="date"    column="date"    />
+        <result property="price"    column="price"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="remark"    column="remark"    />
+
+        <result property="coinType"    column="coin_type"    />
+        <result property="changeRate"    column="change_rate"    />
+    </resultMap>
+
+    <sql id="selectPtbDailyPriceVo">
+        select coin_type, change_rate, id, date, price, create_time, remark from t_ptb_daily_price
+    </sql>
+
+    <select id="selectPtbDailyPriceList" parameterType="PtbDailyPrice"
+            resultMap="PtbDailyPriceResult">
+        <include refid="selectPtbDailyPriceVo"/>
+        <where>
+            <if test="date != null "> and date = #{date}</if>
+            <if test="coinType != null "> and coin_type = #{coinType}</if>
+            <if test="price != null "> and price = #{price}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

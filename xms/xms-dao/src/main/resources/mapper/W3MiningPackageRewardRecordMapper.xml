@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3MiningPackageRewardRecordMapper">
+
+    <resultMap type="W3MiningPackageRewardRecord" id="W3MiningPackageRewardRecordResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="fsnValue"    column="fsn_value"    />
+        <result property="validNum3"    column="valid_num3"    />
+        <result property="ratio"    column="ratio"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="staticReward"    column="static_reward"    />
+        <result property="finalStaticReward"    column="final_static_reward"    />
+        <result property="validNum3Reward"    column="valid_num3_reward"    />
+        <result property="finalValidNum3Reward"    column="final_valid_num3_reward"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="date"    column="date"    />
+        <result property="type"    column="type"    />
+    </resultMap>
+
+    <sql id="selectW3MiningPackageRewardRecordVo">
+        select static_reward, final_static_reward, valid_num3_reward, final_valid_num3_reward, type,  id, user_id, fsn_value, valid_num3, ratio, order_no, create_time, date from t_w3_mining_package_reward_record
+    </sql>
+
+    <select id="selectW3MiningPackageRewardRecordList" parameterType="W3MiningPackageRewardRecord"
+            resultMap="W3MiningPackageRewardRecordResult">
+        <include refid="selectW3MiningPackageRewardRecordVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="fsnValue != null "> and fsn_value = #{fsnValue}</if>
+            <if test="validNum3 != null "> and valid_num3 = #{validNum3}</if>
+            <if test="ratio != null "> and ratio = #{ratio}</if>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="date != null  and date != ''"> and date = #{date}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

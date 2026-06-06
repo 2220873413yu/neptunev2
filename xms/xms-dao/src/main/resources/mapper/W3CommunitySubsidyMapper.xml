@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.W3CommunitySubsidyMapper">
+
+    <resultMap type="com.xms.dao.domain.W3CommunitySubsidy" id="W3CommunitySubsidyResult">
+        <result property="id"    column="id"    />
+        <result property="level"    column="level"    />
+        <result property="rewardRatio"    column="reward_ratio"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="updateBy"    column="update_by"    />
+    </resultMap>
+
+    <sql id="selectW3CommunitySubsidyVo">
+        select id, level, reward_ratio, create_time, update_time, remark, deleted, create_by, update_by from t_w3_community_subsidy
+    </sql>
+
+    <select id="selectW3CommunitySubsidyList" parameterType="com.xms.dao.domain.W3CommunitySubsidy"
+            resultMap="W3CommunitySubsidyResult">
+        <include refid="selectW3CommunitySubsidyVo"/>
+        <where>
+            <if test="level != null "> and level = #{level}</if>
+            <if test="rewardRatio != null "> and reward_ratio = #{rewardRatio}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

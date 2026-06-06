@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.CardPackageMapper">
+
+    <resultMap type="CardPackage" id="CardPackageResult">
+        <result property="id"    column="id"    />
+        <result property="price"    column="price"    />
+        <result property="image"    column="image"    />
+        <result property="computingPower"    column="computing_power"    />
+        <result property="cardType"    column="card_type"    />
+        <result property="sales"    column="sales"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="sort"    column="sort"    />
+        <result property="remark"    column="remark"    />
+        <result property="validNum3GiftRatio"    column="valid_num3_gift_ratio"    />
+    </resultMap>
+
+    <sql id="selectCardPackageVo">
+        select valid_num3_gift_ratio, id, price, image, computing_power, card_type, sales, status, create_time, update_time, sort, remark from t_card_package
+    </sql>
+
+    <select id="selectCardPackageList" parameterType="CardPackage"
+            resultMap="CardPackageResult">
+        <include refid="selectCardPackageVo"/>
+        <where>
+            <if test="price != null "> and price = #{price}</if>
+            <if test="image != null  and image != ''"> and image = #{image}</if>
+            <if test="computingPower != null "> and computing_power = #{computingPower}</if>
+            <if test="cardType != null "> and card_type = #{cardType}</if>
+            <if test="sales != null  and sales != ''"> and sales = #{sales}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="sort != null "> and sort = #{sort}</if>
+        </where>
+        order by card_type desc
+    </select>
+
+</mapper>

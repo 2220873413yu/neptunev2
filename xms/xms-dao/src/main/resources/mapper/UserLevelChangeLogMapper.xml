@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserLevelChangeLogMapper">
+
+    <resultMap type="UserLevelChangeLog" id="UserLevelChangeLogResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="oldLevel"    column="old_level"    />
+        <result property="newLevel"    column="new_level"    />
+        <result property="changeType"    column="change_type"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="rewardDetail"    column="reward_detail"    />
+        <result property="totalReward"    column="total_reward"    />
+        <result property="historyMaxLevel"    column="history_max_level"    />
+        <result property="hasReward"    column="has_reward"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectUserLevelChangeLogVo">
+        select id, user_id, old_level, new_level, change_type, order_no, reward_detail, total_reward, history_max_level, has_reward, create_time from t_user_level_change_log
+    </sql>
+
+    <select id="selectUserLevelChangeLogList" parameterType="UserLevelChangeLog"
+            resultMap="UserLevelChangeLogResult">
+        <include refid="selectUserLevelChangeLogVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="oldLevel != null "> and old_level = #{oldLevel}</if>
+            <if test="newLevel != null "> and new_level = #{newLevel}</if>
+            <if test="changeType != null "> and change_type = #{changeType}</if>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="rewardDetail != null  and rewardDetail != ''"> and reward_detail = #{rewardDetail}</if>
+            <if test="totalReward != null "> and total_reward = #{totalReward}</if>
+            <if test="historyMaxLevel != null "> and history_max_level = #{historyMaxLevel}</if>
+            <if test="hasReward != null "> and has_reward = #{hasReward}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

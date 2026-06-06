@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserInfoSnapshotMapper">
+
+    <resultMap type="UserInfoSnapshot" id="UserInfoSnapshotResult">
+        <result property="snapshotId"    column="snapshot_id"    />
+        <result property="stakeRoundId"    column="stake_round_id"    />
+        <result property="snapshotTime"    column="snapshot_time"    />
+        <result property="userId"    column="user_id"    />
+        <result property="account"    column="account"    />
+        <result property="userCode"    column="user_code"    />
+        <result property="avatar"    column="avatar"    />
+        <result property="email"    column="email"    />
+        <result property="nodeLevel"    column="node_level"    />
+        <result property="minNodeLevel"    column="min_node_level"    />
+        <result property="layerLevel"    column="layer_level"    />
+        <result property="minLayerLevel"    column="min_layer_level"    />
+        <result property="gameLevel"    column="game_level"    />
+        <result property="minGameLevel"    column="min_game_level"    />
+        <result property="inviteUserCode"    column="invite_user_code"    />
+        <result property="inviteUserId"    column="invite_user_id"    />
+        <result property="status"    column="status"    />
+        <result property="isValid"    column="is_valid"    />
+        <result property="subNum"    column="sub_num"    />
+        <result property="validSubNum"    column="valid_sub_num"    />
+        <result property="umbrellaNum"    column="umbrella_num"    />
+        <result property="validUmbrellaNum"    column="valid_umbrella_num"    />
+        <result property="performance"    column="performance"    />
+        <result property="subMining"    column="sub_mining"    />
+        <result property="performanceMining"    column="performance_mining"    />
+        <result property="communityPerformance"    column="community_performance"    />
+        <result property="subPerformance"    column="sub_performance"    />
+        <result property="umbrellaPerformance"    column="umbrella_performance"    />
+        <result property="parentChain"    column="parent_chain"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="withdrawalOpenOrClose"    column="withdrawal_open_or_close"    />
+        <result property="lastLoginIp"    column="last_login_ip"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="dividendAvailableAmount"    column="dividend_available_amount"    />
+        <result property="distributedAmount"    column="distributed_amount"    />
+        <result property="hasStudioSubsidyEligible"    column="has_studio_subsidy_eligible"    />
+    </resultMap>
+
+    <sql id="selectUserInfoSnapshotVo">
+        select snapshot_id, stake_round_id, snapshot_time, user_id, account, user_code, avatar, email, node_level, min_node_level, layer_level, min_layer_level, game_level, min_game_level, invite_user_code, invite_user_id, status, is_valid, sub_num, valid_sub_num, umbrella_num, valid_umbrella_num, performance, sub_mining, performance_mining, community_performance, sub_performance, umbrella_performance, parent_chain, create_time, update_time, withdrawal_open_or_close, last_login_ip, deleted, dividend_available_amount, distributed_amount, has_studio_subsidy_eligible from t_user_info_snapshot
+    </sql>
+
+    <select id="selectUserInfoSnapshotList" parameterType="UserInfoSnapshot"
+            resultMap="UserInfoSnapshotResult">
+        <include refid="selectUserInfoSnapshotVo"/>
+        <where>
+            <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
+            <if test="snapshotTime != null "> and snapshot_time = #{snapshotTime}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="account != null  and account != ''"> and account = #{account}</if>
+            <if test="userCode != null  and userCode != ''"> and user_code = #{userCode}</if>
+            <if test="avatar != null  and avatar != ''"> and avatar = #{avatar}</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+
+            <if test="gameLevel != null "> and game_level = #{gameLevel}</if>
+            <if test="minGameLevel != null "> and min_game_level = #{minGameLevel}</if>
+
+            <if test="nodeLevel != null "> and node_level = #{nodeLevel}</if>
+            <if test="minNodeLevel != null "> and min_node_level = #{minNodeLevel}</if>
+
+            <if test="layerLevel != null "> and layer_level = #{layerLevel}</if>
+            <if test="minLayerLevel != null "> and min_layer_level = #{minLayerLevel}</if>
+
+            <if test="finaNodeLevel != null and finaNodeLevel != '' ">
+                and GREATEST(node_level, min_node_level) = #{finaNodeLevel}
+            </if>
+
+            <if test="finaLayerLevel != null and finaLayerLevel != '' ">
+                and GREATEST(layer_level, min_layer_level) = #{finaLayerLevel}
+            </if>
+
+            <if test="finaGameLevel != null and finaGameLevel != '' ">
+                and GREATEST(game_level, min_game_level) = #{finaGameLevel}
+            </if>
+
+            <if test="inviteUserCode != null  and inviteUserCode != ''"> and invite_user_code = #{inviteUserCode}</if>
+            <if test="inviteUserId != null "> and invite_user_id = #{inviteUserId}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="isValid != null "> and is_valid = #{isValid}</if>
+            <if test="subNum != null "> and sub_num = #{subNum}</if>
+            <if test="validSubNum != null "> and valid_sub_num = #{validSubNum}</if>
+            <if test="umbrellaNum != null "> and umbrella_num = #{umbrellaNum}</if>
+            <if test="validUmbrellaNum != null "> and valid_umbrella_num = #{validUmbrellaNum}</if>
+            <if test="performance != null "> and performance = #{performance}</if>
+            <if test="subMining != null "> and sub_mining = #{subMining}</if>
+            <if test="performanceMining != null "> and performance_mining = #{performanceMining}</if>
+            <if test="communityPerformance != null "> and community_performance = #{communityPerformance}</if>
+            <if test="subPerformance != null "> and sub_performance = #{subPerformance}</if>
+            <if test="umbrellaPerformance != null "> and umbrella_performance = #{umbrellaPerformance}</if>
+            <if test="parentChain != null  and parentChain != ''"> and parent_chain = #{parentChain}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="withdrawalOpenOrClose != null "> and withdrawal_open_or_close = #{withdrawalOpenOrClose}</if>
+            <if test="lastLoginIp != null  and lastLoginIp != ''"> and last_login_ip = #{lastLoginIp}</if>
+            <if test="dividendAvailableAmount != null "> and dividend_available_amount = #{dividendAvailableAmount}</if>
+            <if test="distributedAmount != null "> and distributed_amount = #{distributedAmount}</if>
+            <if test="hasStudioSubsidyEligible != null "> and has_studio_subsidy_eligible = #{hasStudioSubsidyEligible}</if>
+        </where>
+        order by snapshot_id desc
+    </select>
+
+</mapper>

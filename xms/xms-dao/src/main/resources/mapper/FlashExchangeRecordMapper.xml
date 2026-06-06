@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.FlashExchangeRecordMapper">
+
+    <resultMap type="FlashExchangeRecord" id="FlashExchangeRecordResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="type"    column="type"    />
+        <result property="balance"    column="balance"    />
+        <result property="fee"    column="fee"    />
+        <result property="feeRatio"    column="fee_ratio"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="receivedAmount"    column="received_amount"    />
+        <result property="ptbPrice"    column="ptb_price"    />
+    </resultMap>
+
+    <sql id="selectFlashExchangeRecordVo">
+        select received_amount, ptb_price, id, user_id, type, balance, fee, fee_ratio, create_time from t_flash_exchange_record
+    </sql>
+
+    <select id="selectFlashExchangeRecordList" parameterType="FlashExchangeRecord"
+            resultMap="FlashExchangeRecordResult">
+        <include refid="selectFlashExchangeRecordVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="balance != null "> and balance = #{balance}</if>
+            <if test="fee != null "> and fee = #{fee}</if>
+            <if test="feeRatio != null "> and fee_ratio = #{feeRatio}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="queryTotalFlashExchangeAmount" resultType="decimal">
+        SELECT
+            IFNULL(SUM(balance), 0) AS total_balance
+        FROM t_flash_exchange_record
+        WHERE type = 1;
+    </select>
+
+</mapper>

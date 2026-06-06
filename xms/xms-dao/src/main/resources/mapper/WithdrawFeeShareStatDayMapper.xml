@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.WithdrawFeeShareStatDayMapper">
+
+    <resultMap type="WithdrawFeeShareStatDay" id="WithdrawFeeShareStatDayResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="statDate"    column="stat_date"    />
+        <result property="totalFee"    column="total_fee"    />
+        <result property="distributedFee"    column="distributed_fee"    />
+        <result property="userCount"    column="user_count"    />
+        <result property="perUserAmount"    column="per_user_amount"    />
+        <result property="shareUserSnapshot"    column="share_user_snapshot"    />
+        <result property="failReason"    column="fail_reason"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectWithdrawFeeShareStatDayVo">
+        select id, order_no, stat_date, total_fee, distributed_fee, user_count, per_user_amount, share_user_snapshot, fail_reason, remark, create_time from t_withdraw_fee_share_stat_day
+    </sql>
+
+    <select id="selectWithdrawFeeShareStatDayList" parameterType="WithdrawFeeShareStatDay"
+            resultMap="WithdrawFeeShareStatDayResult">
+        <include refid="selectWithdrawFeeShareStatDayVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="statDate != null "> and stat_date = #{statDate}</if>
+            <if test="totalFee != null "> and total_fee = #{totalFee}</if>
+            <if test="distributedFee != null "> and distributed_fee = #{distributedFee}</if>
+            <if test="userCount != null "> and user_count = #{userCount}</if>
+            <if test="perUserAmount != null "> and per_user_amount = #{perUserAmount}</if>
+            <if test="shareUserSnapshot != null  and shareUserSnapshot != ''"> and share_user_snapshot = #{shareUserSnapshot}</if>
+            <if test="failReason != null  and failReason != ''"> and fail_reason = #{failReason}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

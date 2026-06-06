@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.UserWealthVaultMapper">
+
+    <resultMap type="UserWealthVault" id="UserWealthVaultResult">
+        <result property="id"    column="id"    />
+        <result property="seg1Amount"    column="seg1_amount"    />
+        <result property="seg2Amount"    column="seg2_amount"    />
+        <result property="seg3Amount"    column="seg3_amount"    />
+        <result property="seg4Amount"    column="seg4_amount"    />
+        <result property="seg5Amount"    column="seg5_amount"    />
+        <result property="seg6Amount"    column="seg6_amount"    />
+        <result property="seg7Amount"    column="seg7_amount"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectUserWealthVaultVo">
+        select id, seg1_amount, seg2_amount, seg3_amount, seg4_amount, seg5_amount, seg6_amount, seg7_amount, create_time, update_time from t_user_wealth_vault
+    </sql>
+
+    <select id="selectUserWealthVaultList" parameterType="UserWealthVault"
+            resultMap="UserWealthVaultResult">
+        <include refid="selectUserWealthVaultVo"/>
+        <where>
+            <if test="id != null "> and id = #{id}</if>
+            <if test="seg1Amount != null "> and seg1_amount = #{seg1Amount}</if>
+            <if test="seg2Amount != null "> and seg2_amount = #{seg2Amount}</if>
+            <if test="seg3Amount != null "> and seg3_amount = #{seg3Amount}</if>
+            <if test="seg4Amount != null "> and seg4_amount = #{seg4Amount}</if>
+            <if test="seg5Amount != null "> and seg5_amount = #{seg5Amount}</if>
+            <if test="seg6Amount != null "> and seg6_amount = #{seg6Amount}</if>
+            <if test="seg7Amount != null "> and seg7_amount = #{seg7Amount}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

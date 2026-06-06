@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.RewardPoolBatchMapper">
+
+    <resultMap type="RewardPoolBatch" id="RewardPoolBatchResult">
+        <result property="id"    column="id"    />
+        <result property="poolType"    column="pool_type"    />
+        <result property="batchNo"    column="batch_no"    />
+        <result property="batchDate"    column="batch_date"    />
+        <result property="totalAmount"    column="total_amount"    />
+        <result property="staticAmount"    column="static_amount"    />
+        <result property="dynamicAmount"    column="dynamic_amount"    />
+        <result property="status"    column="status"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectRewardPoolBatchVo">
+        select id, pool_type, batch_no, batch_date, total_amount, static_amount, dynamic_amount, status, remark, create_time, update_time from t_reward_pool_batch
+    </sql>
+
+    <select id="selectRewardPoolBatchList" parameterType="RewardPoolBatch"
+            resultMap="RewardPoolBatchResult">
+        <include refid="selectRewardPoolBatchVo"/>
+        <where>
+            <if test="poolType != null "> and pool_type = #{poolType}</if>
+            <if test="batchNo != null  and batchNo != ''"> and batch_no = #{batchNo}</if>
+            <if test="batchDate != null "> and batch_date = #{batchDate}</if>
+            <if test="totalAmount != null "> and total_amount = #{totalAmount}</if>
+            <if test="staticAmount != null "> and static_amount = #{staticAmount}</if>
+            <if test="dynamicAmount != null "> and dynamic_amount = #{dynamicAmount}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

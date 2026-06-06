@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.CardOrderMapper">
+
+    <resultMap type="CardOrder" id="CardOrderResult">
+        <result property="id"    column="id"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="cardInstanceId"    column="card_instance_id"    />
+        <result property="masterOrderNo"    column="master_order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="orderType"    column="order_type"    />
+        <result property="payAmount"    column="pay_amount"    />
+        <result property="computingPower"    column="computing_power"    />
+        <result property="cardType"    column="card_type"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="status"    column="status"    />
+
+
+        <result property="createDate"    column="create_date"    />
+        <result property="extraComputingPower"    column="extra_computing_power"    />
+        <result property="currentComputingPower"    column="current_computing_power"    />
+    </resultMap>
+
+    <sql id="selectCardOrderVo">
+        select create_date, extra_computing_power, current_computing_power, status, card_instance_id, master_order_no, id, order_no, user_id, order_type, pay_amount, computing_power, card_type, create_time, update_time from t_card_order
+    </sql>
+
+    <select id="selectCardOrderList" parameterType="CardOrder"
+            resultMap="CardOrderResult">
+        <include refid="selectCardOrderVo"/>
+        <where>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="status != null"> and status = #{status}</if>
+            <if test="cardInstanceId != null  and cardInstanceId != ''"> and card_instance_id = #{cardInstanceId}</if>
+            <if test="masterOrderNo != null  and masterOrderNo != ''"> and master_order_no = #{masterOrderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="orderType != null "> and order_type = #{orderType}</if>
+            <if test="payAmount != null "> and pay_amount = #{payAmount}</if>
+            <if test="computingPower != null "> and computing_power = #{computingPower}</if>
+            <if test="cardType != null "> and card_type = #{cardType}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.IdoOrderMapper">
+
+    <resultMap type="IdoOrder" id="IdoOrderResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="address"    column="address"    />
+        <result property="shares"    column="shares"    />
+        <result property="okbPaid"    column="okb_paid"    />
+        <result property="txHash"    column="tx_hash"    />
+        <result property="timestamp"    column="timestamp"    />
+        <result property="blockNumber"    column="block_number"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="bizStatus"    column="biz_status"    />
+    </resultMap>
+
+    <sql id="selectIdoOrderVo">
+        select biz_status, id, user_id, address, shares, okb_paid, tx_hash, timestamp, block_number, create_time,update_time biz_status from t_ido_order
+    </sql>
+
+    <select id="selectIdoOrderList" parameterType="IdoOrder"
+            resultMap="IdoOrderResult">
+        <include refid="selectIdoOrderVo"/>
+        <where>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="address != null  and address != ''"> and address = #{address}</if>
+            <if test="shares != null "> and shares = #{shares}</if>
+            <if test="okbPaid != null "> and okb_paid = #{okbPaid}</if>
+            <if test="txHash != null  and txHash != ''"> and tx_hash = #{txHash}</if>
+            <if test="timestamp != null "> and timestamp = #{timestamp}</if>
+            <if test="blockNumber != null  and blockNumber != ''"> and block_number = #{blockNumber}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+            <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

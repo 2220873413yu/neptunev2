@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.CardUpgradeLogMapper">
+
+    <resultMap type="CardUpgradeLog" id="CardUpgradeLogResult">
+        <result property="id"    column="id"    />
+        <result property="flowType"    column="flow_type"    />
+        <result property="cardOrderNo"    column="card_order_no"    />
+        <result property="cardSerialNo"    column="card_serial_no"    />
+        <result property="masterOrderNo"    column="master_order_no"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="userId"    column="user_id"    />
+        <result property="fromCardType"    column="from_card_type"    />
+        <result property="fromPrice"    column="from_price"    />
+        <result property="fromPower"    column="from_power"    />
+        <result property="fromSnapshot"    column="from_snapshot"    />
+        <result property="toCardType"    column="to_card_type"    />
+        <result property="toPrice"    column="to_price"    />
+        <result property="toPower"    column="to_power"    />
+        <result property="amountDelta"    column="amount_delta"    />
+        <result property="powerDelta"    column="power_delta"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectCardUpgradeLogVo">
+        select id, flow_type, card_order_no, card_serial_no, master_order_no, order_no, user_id, from_card_type, from_price, from_power, from_snapshot, to_card_type, to_price, to_power, amount_delta, power_delta, create_time, remark from t_card_upgrade_log
+    </sql>
+
+    <select id="selectCardUpgradeLogList" parameterType="CardUpgradeLog"
+            resultMap="CardUpgradeLogResult">
+        <include refid="selectCardUpgradeLogVo"/>
+        <where>
+            <if test="flowType != null "> and flow_type = #{flowType}</if>
+            <if test="cardOrderNo != null "> and card_order_no = #{cardOrderNo}</if>
+            <if test="cardSerialNo != null  and cardSerialNo != ''"> and card_serial_no = #{cardSerialNo}</if>
+            <if test="masterOrderNo != null  and masterOrderNo != ''"> and master_order_no = #{masterOrderNo}</if>
+            <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="fromCardType != null "> and from_card_type = #{fromCardType}</if>
+            <if test="fromPrice != null "> and from_price = #{fromPrice}</if>
+            <if test="fromPower != null "> and from_power = #{fromPower}</if>
+            <if test="fromSnapshot != null  and fromSnapshot != ''"> and from_snapshot = #{fromSnapshot}</if>
+            <if test="toCardType != null "> and to_card_type = #{toCardType}</if>
+            <if test="toPrice != null "> and to_price = #{toPrice}</if>
+            <if test="toPower != null "> and to_power = #{toPower}</if>
+            <if test="amountDelta != null "> and amount_delta = #{amountDelta}</if>
+            <if test="powerDelta != null "> and power_delta = #{powerDelta}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.PtbDayRatioRuleMapper">
+
+    <resultMap type="PtbDayRatioRule" id="PtbDayRatioRuleResult">
+        <result property="id"    column="id"    />
+        <result property="coinType"    column="coin_type"    />
+        <result property="baseRatio"    column="base_ratio"    />
+        <result property="triggerThreshold"    column="trigger_threshold"    />
+        <result property="stepPerc"    column="step_perc"    />
+        <result property="minRatio"    column="min_ratio"    />
+        <result property="maxRatio"    column="max_ratio"    />
+        <result property="enabled"    column="enabled"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectPtbDayRatioRuleVo">
+        select id, coin_type, base_ratio, trigger_threshold, step_perc, min_ratio, max_ratio, enabled, remark, create_time, update_time from ptb_day_ratio_rule
+    </sql>
+
+    <select id="selectPtbDayRatioRuleList" parameterType="PtbDayRatioRule"
+            resultMap="PtbDayRatioRuleResult">
+        <include refid="selectPtbDayRatioRuleVo"/>
+        <where>
+            <if test="coinType != null "> and coin_type = #{coinType}</if>
+            <if test="baseRatio != null "> and base_ratio = #{baseRatio}</if>
+            <if test="triggerThreshold != null "> and trigger_threshold = #{triggerThreshold}</if>
+            <if test="stepPerc != null "> and step_perc = #{stepPerc}</if>
+            <if test="minRatio != null "> and min_ratio = #{minRatio}</if>
+            <if test="maxRatio != null "> and max_ratio = #{maxRatio}</if>
+            <if test="enabled != null "> and enabled = #{enabled}</if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>
