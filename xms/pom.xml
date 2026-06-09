@@ -459,8 +459,8 @@
         <module>xms-quartz</module>
         <module>xms-generator</module>
         <module>xms-dao</module>
-        <module>neptune-app</module>
-        <module>neptune-admin</module>
+        <module>neptunev2-app</module>
+        <module>neptunev2-admin</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -70,13 +70,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		userInfoBo.setUmbrellaNum(userInfo.getUmbrellaNum());
 		userInfoBo.setCommunityPerformance(userInfo.getCommunityPerformance());
 		userInfoBo.setPerformance(userInfo.getPerformance());
+
+
 		userInfoBo.setHistoryPerformance(userInfo.getHistoryPerformance());
+
 		userInfoBo.setSubPerformance(userInfo.getSubPerformance());
 		userInfoBo.setUmbrellaPerformance(userInfo.getUmbrellaPerformance());
 		Long count = userStakePositionService.lambdaQuery()
 			.eq(UserStakePosition::getUserId, userId)
 			.count();
 		userInfoBo.setStakeAccount(count);
+
+		//旧系统历史业绩
+		userInfoBo.setOldHistoryPerformance(userInfo.getOldHistoryPerformance());
+		//旧系统个人业绩
+		userInfoBo.setOldPerformance(userInfo.getOldPerformance());
+		//旧系统团队业绩
+		userInfoBo.setOldUmbrellaPerformance(userInfo.getOldUmbrellaPerformance());
 		//userInfoBo.setIsActive(userInfo.getIsActive());
 		//userInfoBo.setActivationCount(userInfo.getActivationCount());
 		return userInfoBo;

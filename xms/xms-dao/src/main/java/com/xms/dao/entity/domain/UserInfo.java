@@ -139,10 +139,22 @@ public class UserInfo extends BaseXmsEntity {
 	private BigDecimal performance;
 
 	/**
+	 * 旧系统个人业绩
+	 */
+	@Excel(name = "旧系统个人业绩", sort = 6)
+	private BigDecimal oldPerformance;
+
+	/**
 	 * 当前轮业绩
 	 */
 	@Excel(name = "当前轮业绩", sort = 6)
 	private BigDecimal historyPerformance;
+
+	/**
+	 * 旧系统历史业绩
+	 */
+	@Excel(name = "旧系统历史业绩", sort = 6)
+	private BigDecimal oldHistoryPerformance;
 
 
 	/**
@@ -150,6 +162,12 @@ public class UserInfo extends BaseXmsEntity {
 	 */
 	@Excel(name = "直推业绩(质押量)", sort = 6)
 	private BigDecimal subPerformance;
+
+	/**
+	 * 旧系统直推业绩
+	 */
+	@Excel(name = "旧系统直推业绩", sort = 6)
+	private BigDecimal oldSubPerformance;
 
 	/**
 	 * 小区业绩(质押量)
@@ -162,6 +180,12 @@ public class UserInfo extends BaseXmsEntity {
 	 */
 	@Excel(name = "团队业绩(质押量)", sort = 6)
 	private BigDecimal umbrellaPerformance;
+
+	/**
+	 * 旧系统团队业绩
+	 */
+	@Excel(name = "旧系统团队业绩", sort = 6)
+	private BigDecimal oldUmbrellaPerformance;
 
 	/**
 	 * 直推用户数
@@ -257,5 +281,25 @@ public class UserInfo extends BaseXmsEntity {
 			.filter(s -> !s.isEmpty())
 			.map(Long::valueOf)
 			.collect(Collectors.toList());
+	}
+
+	public BigDecimal getEffectivePerformance() {
+		return zeroIfNull(this.performance).add(zeroIfNull(this.oldPerformance));
+	}
+
+	public BigDecimal getEffectiveHistoryPerformance() {
+		return zeroIfNull(this.historyPerformance).add(zeroIfNull(this.oldHistoryPerformance));
+	}
+
+	public BigDecimal getEffectiveSubPerformance() {
+		return zeroIfNull(this.subPerformance).add(zeroIfNull(this.oldSubPerformance));
+	}
+
+	public BigDecimal getEffectiveUmbrellaPerformance() {
+		return zeroIfNull(this.umbrellaPerformance).add(zeroIfNull(this.oldUmbrellaPerformance));
+	}
+
+	private BigDecimal zeroIfNull(BigDecimal amount) {
+		return amount == null ? BigDecimal.ZERO : amount;
 	}
 }

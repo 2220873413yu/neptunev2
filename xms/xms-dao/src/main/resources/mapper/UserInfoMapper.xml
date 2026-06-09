@@ -20,10 +20,14 @@
         <result column="umbrella_num" property="umbrellaNum" />
         <result column="valid_umbrella_num" property="validUmbrellaNum" />
         <result column="performance" property="performance" />
+        <result column="old_performance" property="oldPerformance" />
         <result column="history_performance" property="historyPerformance" />
+        <result column="old_history_performance" property="oldHistoryPerformance" />
         <result column="sub_performance" property="subPerformance" />
+        <result column="old_sub_performance" property="oldSubPerformance" />
         <result column="community_performance" property="communityPerformance" />
         <result column="umbrella_performance" property="umbrellaPerformance" />
+        <result column="old_umbrella_performance" property="oldUmbrellaPerformance" />
 
         <result column="parent_chain" property="parentChain" />
         <result column="create_time" property="createTime" />
@@ -318,12 +322,16 @@
             a.user_id,
             a.account,
             a.performance,
+            a.old_performance,
+            a.old_history_performance,
+            a.old_sub_performance,
             a.invite_user_id,
             a.game_level,
             a.sub_num,
             a.umbrella_num,
             a.valid_umbrella_num,
             a.umbrella_performance,
+            a.old_umbrella_performance,
             a.create_time
         FROM
             t_user_info a

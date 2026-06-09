@@ -352,6 +352,16 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="赠送业绩(质押量)" align="center" width="150">
+        <template slot-scope="scope">
+          <div class="exchange-info" style="text-align: left;">
+            我的业绩: {{ scope.row.oldPerformance }} <br>
+            团队业绩: {{ scope.row.oldUmbrellaPerformance }} <br>
+            当前轮业绩: {{ scope.row.oldHistoryPerformance }} <br>
+          </div>
+        </template>
+      </el-table-column>
+
       <el-table-column align="center" label="节点信息" width="180">
         <template slot-scope="scope">
           <div style="text-align: left;">

@@ -534,7 +534,7 @@ import request from '@/utils/request';
 function chatWithAIStream(text, onMessage, onError, onComplete) {
   console.log('开始流式聊天请求:', text);
   return new Promise((resolve, reject) => {
-    fetch('http://localhost:19865/bot/handleWord', {
+    fetch('http://localhost:19965/bot/handleWord', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
