@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xms.dao.mapper.OldHToAcpDepositRecordMapper">
+
+    <resultMap type="OldHToAcpDepositRecord" id="OldHToAcpDepositRecordResult">
+        <result property="id" column="id" />
+        <result property="recordNo" column="record_no" />
+        <result property="oldOrderNo" column="old_order_no" />
+        <result property="userId" column="user_id" />
+        <result property="account" column="account" />
+        <result property="oldHAmount" column="old_h_amount" />
+        <result property="hPriceUsdtSnapshot" column="h_price_usdt_snapshot" />
+        <result property="oldHUsdtAmount" column="old_h_usdt_amount" />
+        <result property="acpPriceUsdtSnapshot" column="acp_price_usdt_snapshot" />
+        <result property="acpDepositAmount" column="acp_deposit_amount" />
+        <result property="stakeOrderId" column="stake_order_id" />
+        <result property="stakeOrderNo" column="stake_order_no" />
+        <result property="depositSourceType" column="deposit_source_type" />
+        <result property="status" column="status" />
+        <result property="remark" column="remark" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <sql id="selectOldHToAcpDepositRecordVo">
+        select id, record_no, old_order_no, user_id, account, old_h_amount,
+               h_price_usdt_snapshot, old_h_usdt_amount, acp_price_usdt_snapshot,
+               acp_deposit_amount, stake_order_id, stake_order_no, deposit_source_type,
+               status, remark, create_time, update_time
+        from t_old_h_to_acp_deposit_record
+    </sql>
+
+    <select id="selectOldHToAcpDepositRecordList" parameterType="OldHToAcpDepositRecord" resultMap="OldHToAcpDepositRecordResult">
+        <include refid="selectOldHToAcpDepositRecordVo"/>
+        <where>
+            <if test="oldOrderNo != null and oldOrderNo != ''"> and old_order_no = #{oldOrderNo}</if>
+            <if test="stakeOrderNo != null and stakeOrderNo != ''"> and stake_order_no = #{stakeOrderNo}</if>
+            <if test="userId != null"> and user_id = #{userId}</if>
+            <if test="account != null and account != ''"> and account = #{account}</if>
+            <if test="status != null"> and status = #{status}</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and create_time between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+</mapper>

@@ -58,6 +58,12 @@ public class ConstantType {
 		public static final int type_9 = 9;
 	}
 
+	//质押/入金订单来源 1:正常ACP入金,3:旧系统H换ACP入金
+	public class stake_order_deposit_source_type {
+		public static final int type_1 = 1;
+		public static final int type_3 = 3;
+	}
+
 	/**
 	 * 1:动态提现,2
 	 */
@@ -67,7 +73,7 @@ public class ConstantType {
 	/**
 	 *
 	 * 1:节点质押释放,2:质押静态收益,3:极差奖,4:平级奖,5:层级奖,6:工作室收益
-	 * 7:节点权益分红,8:奖励池新增奖励,9:保险仓赔付,10:财富仓释放
+	 * 7:节点权益分红,8:奖励池新增奖励,9:保险仓赔付,10:财富仓释放,11:H赠送释放
 	 * --------------------------------------------
 	 */
 	public class xms_reward_record_source_type{
@@ -166,6 +172,8 @@ public class ConstantType {
 		public static final int type_29 = 29;
 		public static final int type_30 = 30;
 		public static final int type_32 = 32;
+		/** H赠送释放 */
+		public static final int type_33 = 33;
 		public static final int type_44 = 44;
 	}
 

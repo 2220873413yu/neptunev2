@@ -271,28 +271,32 @@ public class BizWithdrawalServiceImpl implements BizWithdrawalService {
 		UserMoney userMoney = userMoneyServiceImpl.lambdaQuery()
 			.eq(UserMoney::getId, userId)
 			.one();
-		if (req.getCtp().equals(1)) {
+		if (req.getCtp().equals(ConstantType.user_money_coin_type.type_1)) {
 			if (userMoney.getValidNum1().compareTo(req.getCgb()) < 0) {
 				throw new ServiceException(ResponseCode.CODE_1015);
 			}
-		} else if (req.getCtp().equals(2)) {
+		} else if (req.getCtp().equals(ConstantType.user_money_coin_type.type_2)) {
 			if (userMoney.getValidNum2().compareTo(req.getCgb()) < 0) {
 				throw new ServiceException(ResponseCode.CODE_1015);
 			}
-		} else if (req.getCtp().equals(3)) {
+		} else if (req.getCtp().equals(ConstantType.user_money_coin_type.type_3)) {
 			if (userMoney.getValidNum3().compareTo(req.getCgb()) < 0) {
 				throw new ServiceException(ResponseCode.CODE_1015);
 			}
-		} else if (req.getCtp().equals(4)) {
+		} else if (req.getCtp().equals(ConstantType.user_money_coin_type.type_4)) {
 			if (userMoney.getValidNum4().compareTo(req.getCgb()) < 0) {
 				throw new ServiceException(ResponseCode.CODE_1015);
 			}
-		} else if (req.getCtp().equals(5)) {
+		} else if (req.getCtp().equals(ConstantType.user_money_coin_type.type_5)) {
 			if (userMoney.getValidNum5().compareTo(req.getCgb()) < 0) {
 				throw new ServiceException(ResponseCode.CODE_1015);
 			}
-		}  else if (req.getCtp().equals(6)) {
+		}  else if (req.getCtp().equals(ConstantType.user_money_coin_type.type_6)) {
 			if (userMoney.getValidNum6().compareTo(req.getCgb()) < 0) {
+				throw new ServiceException(ResponseCode.CODE_1015);
+			}
+		} else if (req.getCtp().equals(ConstantType.user_money_coin_type.type_9)) {
+			if (userMoney.getValidNum9().compareTo(req.getCgb()) < 0) {
 				throw new ServiceException(ResponseCode.CODE_1015);
 			}
 		}else {
@@ -386,6 +390,10 @@ public class BizWithdrawalServiceImpl implements BizWithdrawalService {
 		if(withdrawal.getStatus().equals(ConstantType.withdrawal_status.type_1)){
 			//发送到合约(内扣)
 			String tokenName = "H";
+			if(!req.getCtp().equals(ConstantType.user_money_coin_type.type_9)){
+				tokenName = "ACP";
+			}
+
 			Map<String, Object> formParams = new HashMap<>();
 			formParams.put("orderNo", withdrawal.getCode());
 			formParams.put("address", withdrawal.getAccountNo());

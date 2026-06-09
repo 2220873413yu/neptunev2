@@ -72,7 +72,7 @@ public class BizWithdrawalController {
 	}
 
 	/**
-	 * 发起提现.提bommai
+	 * 发起提现
 	 *
 	 * @param withdrawalVo
 	 * @return

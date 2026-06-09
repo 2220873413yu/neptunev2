@@ -141,6 +141,11 @@ public interface RedisConstant {
 		 * 质押订单(质押回调和关闭爆仓等等业务)
 		 */
 		String XMS_STAKE_ORDER_PLAN = REDIS_LOCK + "XMS_STAKE_ORDER_PLAN:";
+
+		/**
+		 * H赠送释放每日任务
+		 */
+		String XMS_H_GIFT_RELEASE_DAILY = REDIS_LOCK + "XMS_H_GIFT_RELEASE_DAILY:";
 	}
 
 

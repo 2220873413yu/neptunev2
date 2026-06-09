@@ -113,6 +113,14 @@ public class XmsTask {
 		asyncTaskServiceImpl.handelStakeOrder105();
 	}
 
+	/**
+	 * 任务类型106 H赠送释放每日释放
+	 */
+	public void handelHGiftRelease106() {
+		log.info("任务类型106 H赠送释放每日释放");
+		asyncTaskServiceImpl.handelHGiftRelease106();
+	}
+
 //	/**
 //	 * 任务类型103 每日统计平台币价格
 //	 *

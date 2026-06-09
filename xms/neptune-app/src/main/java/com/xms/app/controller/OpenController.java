@@ -64,6 +64,15 @@ public class OpenController {
 	}
 
 	/**
+	 * 旧系统H入金回调
+	 */
+	@PostMapping("/oldH/deposit/callback")
+	@Anonymous
+	public ResultPista<String> oldHToAcpDepositCallback(@Validated @RequestBody OldHToAcpDepositCallbackBo req) {
+		return bizStakeService.oldHToAcpDepositCallback(req);
+	}
+
+	/**
 	 * 质押订单回调
 	 */
 	@PostMapping("/stakeOrder/callback")

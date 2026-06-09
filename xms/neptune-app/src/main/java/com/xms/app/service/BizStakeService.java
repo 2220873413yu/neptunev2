@@ -1,6 +1,7 @@
 package com.xms.app.service;
 
 import com.xms.app.entity.bo.BuyPointsCallbackBo;
+import com.xms.app.entity.bo.OldHToAcpDepositCallbackBo;
 import com.xms.app.entity.bo.StakeOrderCallbackBo;
 import com.xms.common.core.domain.api.ResultPista;
 
@@ -21,4 +22,11 @@ public interface BizStakeService {
 	 * @return
 	 */
 	ResultPista<String> buyPointsCallback(BuyPointsCallbackBo req);
+
+	/**
+	 * 旧系统H入金回调
+	 * @param req
+	 * @return
+	 */
+	ResultPista<String> oldHToAcpDepositCallback(OldHToAcpDepositCallbackBo req);
 }

@@ -251,7 +251,10 @@ websocket:
 
 # 对接合约回调md5Key
 lq:
+  # 合约回调
   md5Key: "7931847a2d6afc3f0effa9b304d10d0b0ec28b15d0067f8c14883fcd190dc138"
+  # 旧系统海王回调
+  oldMd5Key: "7931847a2d6afc3f0effa9b304d10d0b0ec28b15d0067f8c14883fcd190dc138"
   baseUrl: "http://192.168.101.68:37771"
   tokenName: "0x88Be073bd44806f613aaEcb4e0534843b0a713D5"
   skAddress: "0x6f0fe4cdfb0f8532ac496d189eb1e0861e451f28"

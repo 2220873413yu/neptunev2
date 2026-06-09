@@ -141,7 +141,7 @@ public class TeamRewardUtil {
 							rewardRecordEntity.setUserId(p.getUserId());
 							rewardRecordEntity.setAmount(peerReward);
 							rewardRecordEntity.setBusinessType(ConstantType.xms_reward_record_business_type.type_3);
-							rewardRecordEntity.setSourceType(ConstantType.xms_reward_record_source_type.type_11);
+							//rewardRecordEntity.setSourceType(ConstantType.xms_reward_record_source_type.type_11);
 							rewardRecordEntity.setSourceUserId(userId);
 							rewardRecordEntity.setRealTimePrice(boomaiPrice);
 							rewardRecordEntity.setSourceOrderCode(p.getUserId()+"");
@@ -169,7 +169,7 @@ public class TeamRewardUtil {
 							rewardRecordEntity.setUserId(p.getUserId());
 							rewardRecordEntity.setAmount(exceedReward);
 							rewardRecordEntity.setBusinessType(ConstantType.xms_reward_record_business_type.type_3);
-							rewardRecordEntity.setSourceType(ConstantType.xms_reward_record_source_type.type_12);
+							//rewardRecordEntity.setSourceType(ConstantType.xms_reward_record_source_type.type_12);
 							rewardRecordEntity.setSourceUserId(userId);
 							rewardRecordEntity.setRealTimePrice(boomaiPrice);
 							rewardRecordEntity.setSourceOrderCode(p.getUserId()+"");

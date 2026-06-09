@@ -688,8 +688,10 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 			.orderByAsc(UserLevelConfig::getLevel)
 			.list();
 
-		//发放工作室收益
-		if(CollectionUtil.isNotEmpty(userInfo.getParentIds())){
+		//正常ACP入金才发放工作室收益；旧系统H换ACP入金只保留仓位、业绩和等级重算。
+		if (ConstantType.stake_order_deposit_source_type.type_1 == stakeOrder.getDepositSourceType()
+			&& CollectionUtil.isNotEmpty(userInfo.getParentIds())) {
+			//发放工作室收益
 			sendStudioSubsidyReward(userInfo, userLevelConfigList, stakeOrder);
 		}
 
@@ -757,6 +759,12 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 		}
 	}
 
+	/**
+	 * 发放工作室收益
+	 * @param userInfo
+	 * @param userLevelConfigList
+	 * @param stakeOrder
+	 */
 	private void sendStudioSubsidyReward(UserInfo userInfo, List<UserLevelConfig> userLevelConfigList, StakeOrder stakeOrder) {
 		List<UserInfo> parentUserInfoList = userInfoService.lambdaQuery()
 			.in(UserInfo::getUserId, userInfo.getParentIds())

@@ -197,6 +197,15 @@ public class ConstantSys {
 	//质押最低投资金额 例如写1000,低于1000的h的质押金额不算有效订单
 	public static final String biz_min_stake_amount = "biz_min_stake_amount";
 
+	//ACP单价U，临时从系统参数读取，后续可替换为真实价格来源
+	public static final String biz_acp_price_usdt = "biz_acp_price_usdt";
+
+	//H单价U，临时从系统参数读取，后续可替换为真实价格来源
+	public static final String biz_h_price_usdt = "biz_h_price_usdt";
+
+	//ACP入金赠送H比例，例如30表示赠送入金U价值的30%
+	public static final String biz_acp_h_gift_ratio = "biz_acp_h_gift_ratio";
+
 	//工作室补贴资格最小小区业绩（单位H），例如100000表示小区业绩达到10万H后可获得工作室补贴角色
 	public static final String biz_studio_subsidy_min_umbrella_performance = "biz_studio_subsidy_min_umbrella_performance";
 

@@ -115,6 +115,8 @@ public class JwtAuthenticationAppTokenFilter extends OncePerRequestFilter {
 				//质押订单回调
 				|| requestURI.contains(URL_NOTIFY_STAKE_ORDER_CALLBACK)
 				|| requestURI.contains(URL_WITHDRAWAL_CALLBACK)
+				//旧系统h代币入金质押回调
+				|| requestURI.contains("/api/oldH/deposit/callback")
 				|| requestURI.contains(URL_NOTIFY_buyPointsCallback_CALLBACK)
 				|| requestURI.contains(URL_NOTIFY_NODE_PACKAGE_CALLBACK)) {
 				LoginAppUser loginAppUser = appTokenService.getLoginUser(request);

@@ -48,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dreamlu.mica.core.utils.JsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -83,7 +84,11 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 	private static final String SQL_VALID_NUM3 = "UPDATE t_user_money SET update_time=?,gt_id=?,valid_num3=valid_num3+?,source_code=?,source_type=?,source_id=? WHERE id=? ";
 	private static final String SQL_VALID_NUM7 = "UPDATE t_user_money SET update_time=?,gt_id=?,valid_num7=valid_num7+?,source_code=?,source_type=?,source_id=? WHERE id=? ";
 	private static final String SQL_VALID_NUM8 = "UPDATE t_user_money SET update_time=?,gt_id=?,valid_num8=valid_num8+?,source_code=?,source_type=?,source_id=? WHERE id=? ";
+	private static final String SQL_VALID_NUM9 = "UPDATE t_user_money SET update_time=?,gt_id=?,valid_num9=valid_num9+?,source_code=?,source_type=?,source_id=? WHERE id=? ";
+	private static final String SQL_H_GIFT_RELEASE_BUCKET_DAILY_RELEASE = "UPDATE t_h_gift_release_bucket SET update_time=?,released_amount=?,remaining_amount=?,released_days=?,last_release_date=?,status=? WHERE id=? AND status=1 ";
 	private static final String SQL_UPDATE_AWAITING_AMOUNT = "UPDATE t_mining_package_order SET awaiting_amount = awaiting_amount + ? WHERE id = ?";
+	private static final int H_GIFT_RELEASE_STATUS_RELEASING = 1;
+	private static final int H_GIFT_RELEASE_STATUS_COMPLETED = 2;
 	private final AsyncTaskMapper asyncTaskMapper;
 	private final JdbcTemplate jdbcTemplate;
 	private final RenegadeStreamTemplate redisTemplate;
@@ -118,6 +123,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 	private final INodePlanOrderService nodePlanOrderService;
 	private final INodePlanService nodePlanService;
 	private final IUserMoneyService userMoneyService;
+	private final IHGiftReleaseBucketService hGiftReleaseBucketService;
 
 	//质押相关
 	private final IStakeRoundService stakeRoundService;
@@ -126,6 +132,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 	private final IUserInvestLayerConfigService userInvestLayerConfigService;
 	private final IUserYieldRateConfigService userYieldRateConfigService;
 	private final IStakeDailySnapshotService stakeDailySnapshotService;
+	private final Environment environment;
 
 	/**
 	 * 批量更新订单可领取金额
@@ -472,7 +479,6 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 	/**
 	 * 任务类型102 v9节点均分提现手续费分红任务
 	 */
-	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void distributePtbInterest102(Integer parDate) {
 		int targetDate = resolveStatDate(parDate);
@@ -628,7 +634,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		rewardRecord.setUserId(userId);
 		rewardRecord.setAmount(eachFee);
 		rewardRecord.setBusinessType(ConstantType.xms_reward_record_business_type.type_5);
-		rewardRecord.setSourceType(ConstantType.xms_reward_record_source_type.type_14);
+		//rewardRecord.setSourceType(ConstantType.xms_reward_record_source_type.type_14);
 		rewardRecord.setSourceOrderCode(orderCode);
 		rewardRecord.setOrderCode(IDUtils.getSnowflakeStr());
 		rewardRecord.setSourceUserId(userId);
@@ -778,7 +784,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 								rewardRecord.setUserId(userInfo.getUserId());
 								rewardRecord.setAmount(eachFee);
 								rewardRecord.setBusinessType(ConstantType.xms_reward_record_business_type.type_5);
-								rewardRecord.setSourceType(ConstantType.xms_reward_record_source_type.type_14);
+								//rewardRecord.setSourceType(ConstantType.xms_reward_record_source_type.type_14);
 								rewardRecord.setSourceOrderCode(orderCode);
 								rewardRecord.setOrderCode(IDUtils.getSnowflakeStr());
 								rewardRecord.setSourceUserId(userInfo.getUserId());
@@ -1173,6 +1179,175 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		if (i != 1) {
 			throw new RuntimeException("任务类型101 每日快照数据任务失败");
 		}
+	}
+
+	/**
+	 * 任务类型106：H赠送释放每日释放。
+	 *
+	 * <p>每日释放以 H赠送释放桶为来源，释放事实写入 {@code xms_reward_record}，
+	 * H 钱包余额写入 {@code t_user_money.valid_num9}，钱包流水由 Canal 监听钱包表变更后自动生成。
+	 * 生产环境通过 {@code t_async_task(type=106,date=yyyyMMdd)} 控制每天只执行一次；非生产环境不写任务标识，方便反复联调。</p>
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void handelHGiftRelease106() {
+		String strDate = DateUtil.format(DateUtil.date(), "yyyyMMdd");
+		long currentDate = Long.parseLong(strDate);
+
+		// 1. 生产环境按任务类型和自然日做幂等，已有执行标识则直接跳过。
+		Map<String, Object> task = getTask(SysConstant.TSK_TYPE_106, currentDate + "");
+		if (!CollectionUtil.isEmpty(task)) {
+			log.debug("任务类型106 H赠送释放每日释放任务已存在跳过");
+			return;
+		}
+
+		// 2. 读取当前运行环境。生产环境会限制 start_date 必须小于当天，测试环境允许当天数据反复验证。
+		String profile = environment.getProperty(Constants.ACTIVE_PROFILES_PROPERTY);
+
+		// 3. 批量释放：生成奖金记录、批量增加 H 余额、更新释放桶进度。
+		handleHGiftReleaseDaily(profile, Integer.valueOf(strDate), new Date());
+
+		// 4. 生产环境在同一事务末尾写入任务标识，防止当天重复执行。
+		if (Constants.ACTIVE_PROPERTY_PROD.equalsIgnoreCase(profile)) {
+			addTask(SysConstant.TSK_TYPE_106, currentDate + "");
+		}
+	}
+
+	/**
+	 * 执行 H赠送释放每日批量结算。
+	 *
+	 * <p>生产环境只释放 start_date 小于当天的释放桶，避免 00:00 到任务执行时间之间新建的桶当天被释放。
+	 * 释放后写奖金记录，更新 H 钱包余额，并推进释放桶进度；钱包流水不在这里手写，由 Canal 自动生成。</p>
+	 */
+	private void handleHGiftReleaseDaily(String profile, Integer releaseDay, Date now) {
+		// 1. 收集当天可释放的释放桶。冻结、已完成、剩余为 0 的释放桶不参与本次结算。
+		List<HGiftReleaseBucket> bucketList = hGiftReleaseBucketService.lambdaQuery()
+			.eq(HGiftReleaseBucket::getStatus, H_GIFT_RELEASE_STATUS_RELEASING)
+			.lt(Constants.ACTIVE_PROPERTY_PROD.equalsIgnoreCase(profile), HGiftReleaseBucket::getStartDate, releaseDay)
+			.gt(HGiftReleaseBucket::getRemainingAmount, BigDecimal.ZERO)
+			.list();
+		if (CollectionUtil.isEmpty(bucketList)) {
+			log.info("H赠送释放每日释放无可释放数据, releaseDay:{}", releaseDay);
+			return;
+		}
+
+		int batchSize = 1000;
+		List<RewardRecord> rewardRecordList = new ArrayList<>(Math.min(bucketList.size(), batchSize));
+		List<UserMoney> userMoneyValidNum9List = new ArrayList<>(Math.min(bucketList.size(), batchSize));
+		List<HGiftReleaseBucket> updateBucketList = new ArrayList<>(Math.min(bucketList.size(), batchSize));
+		int count = 0;
+
+		for (HGiftReleaseBucket bucket : bucketList) {
+			// 2. 过滤异常桶；生产环境再次兜底 start_date，防止查询后数据变化导致当天新桶被释放。
+			if (bucket.getId() == null || bucket.getUserId() == null || bucket.getStartDate() == null
+				|| bucket.getRemainingAmount() == null || bucket.getRemainingAmount().compareTo(BigDecimal.ZERO) <= 0) {
+				continue;
+			}
+			if (Constants.ACTIVE_PROPERTY_PROD.equalsIgnoreCase(profile) && bucket.getStartDate() >= releaseDay) {
+				continue;
+			}
+
+			BigDecimal releaseAmount = calculateHGiftReleaseAmount(bucket);
+			if (releaseAmount.compareTo(BigDecimal.ZERO) <= 0) {
+				continue;
+			}
+			String gtId = IDUtils.getSnowflakeStr();
+
+			// 3. 奖金记录作为释放事实，后台收益记录按 type_11=H赠送释放 查询。
+			RewardRecord rewardRecord = new RewardRecord();
+			rewardRecord.setUserId(bucket.getUserId());
+			rewardRecord.setAmount(releaseAmount);
+			rewardRecord.setSourceType(ConstantType.xms_reward_record_source_type.type_11);
+			rewardRecord.setSourceOrderCode(bucket.getBucketNo());
+			rewardRecord.setOrderCode(IDUtils.getSnowflakeStr());
+			rewardRecord.setSourceUserId(bucket.getUserId());
+			rewardRecord.setCreateTime(now);
+			rewardRecordList.add(rewardRecord);
+
+			// 4. 批量增加 H 余额，gtId/source 信息供 Canal 生成钱包流水。
+			UserMoney userMoney = new UserMoney();
+			userMoney.setId(bucket.getUserId());
+			userMoney.setValidNum9(releaseAmount);
+			userMoney.setGtId(gtId);
+			userMoney.setSourceCode(bucket.getBucketNo());
+			userMoney.setSourceId(bucket.getId());
+			userMoney.setSourceType(ConstantType.user_money_log_source_type.type_33);
+			userMoney.setUpdateTime(now);
+			userMoneyValidNum9List.add(userMoney);
+
+			HGiftReleaseBucket updateBucket = buildHGiftReleaseBucketUpdate(bucket, releaseAmount, releaseDay, now);
+			updateBucketList.add(updateBucket);
+
+			// 5. 按固定批量落库，避免一次性堆积过多对象和 SQL 参数。
+			count++;
+			if (count >= batchSize) {
+				batchSettleHGiftRelease(rewardRecordList, userMoneyValidNum9List, updateBucketList);
+				rewardRecordList.clear();
+				userMoneyValidNum9List.clear();
+				updateBucketList.clear();
+				count = 0;
+			}
+		}
+
+		batchSettleHGiftRelease(rewardRecordList, userMoneyValidNum9List, updateBucketList);
+		log.info("H赠送释放每日释放完成, releaseDay:{}, bucketCount:{}", releaseDay, bucketList.size());
+	}
+
+	/**
+	 * 计算单个释放桶当天应释放的 H 数量。
+	 *
+	 * <p>释放桶由系统创建，金额和天数字段按表默认值与创建逻辑保证有值。普通释放日按
+	 * daily_release_amount 释放；最后一天或剩余数量小于每日释放量时释放全部剩余，避免小数尾差残留。</p>
+	 */
+	private BigDecimal calculateHGiftReleaseAmount(HGiftReleaseBucket bucket) {
+		BigDecimal remainingAmount = bucket.getRemainingAmount();
+		BigDecimal dailyReleaseAmount = bucket.getDailyReleaseAmount();
+		Integer releasedDays = bucket.getReleasedDays();
+		Integer releaseDays = bucket.getReleaseDays();
+		// 最后一天或尾差小于每日释放量时，释放全部剩余，避免小数尾差残留。
+		if (releasedDays + 1 >= releaseDays || remainingAmount.compareTo(dailyReleaseAmount) <= 0) {
+			return remainingAmount;
+		}
+		return dailyReleaseAmount;
+	}
+
+	/**
+	 * 构造释放后的释放桶更新对象。
+	 *
+	 * <p>只组装需要批量更新的字段，不直接写库。释放后同步推进已释放数量、剩余数量、释放天数、
+	 * 最后释放日期和状态；当达到总释放天数或剩余数量归零时，释放桶状态改为已完成。</p>
+	 */
+	private HGiftReleaseBucket buildHGiftReleaseBucketUpdate(HGiftReleaseBucket bucket, BigDecimal releaseAmount, Integer releaseDay, Date now) {
+		// 1. 计算释放后的累计释放量和剩余量。
+		BigDecimal releasedAmount = bucket.getReleasedAmount().add(releaseAmount);
+		BigDecimal remainingAmount = bucket.getRemainingAmount().subtract(releaseAmount);
+		// 2. 推进释放天数；release_days 由创建释放桶时统一写入 100 天。
+		Integer releasedDays = bucket.getReleasedDays() + 1;
+		Integer releaseDays = bucket.getReleaseDays();
+
+		// 3. 构造批量更新对象；达到总天数或剩余为 0 时标记完成。
+		HGiftReleaseBucket updateBucket = new HGiftReleaseBucket();
+		updateBucket.setId(bucket.getId());
+		updateBucket.setReleasedAmount(releasedAmount);
+		updateBucket.setRemainingAmount(remainingAmount);
+		updateBucket.setReleasedDays(releasedDays);
+		updateBucket.setLastReleaseDate(releaseDay);
+		updateBucket.setStatus(releasedDays >= releaseDays || remainingAmount.compareTo(BigDecimal.ZERO) <= 0
+			? H_GIFT_RELEASE_STATUS_COMPLETED : H_GIFT_RELEASE_STATUS_RELEASING);
+		updateBucket.setUpdateTime(now);
+		return updateBucket;
+	}
+
+	private void batchSettleHGiftRelease(List<RewardRecord> rewardRecordList, List<UserMoney> userMoneyValidNum9List,
+										 List<HGiftReleaseBucket> updateBucketList) {
+		if (CollectionUtil.isEmpty(rewardRecordList)) {
+			return;
+		}
+		if (!rewardRecordService.saveBatch(rewardRecordList)) {
+			throw new ServiceException("保存H赠送释放奖励记录失败");
+		}
+		bachUpdateMoneyValid9(userMoneyValidNum9List);
+		batchUpdateHGiftReleaseBucket(updateBucketList);
 	}
 
 
@@ -2408,76 +2583,75 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		}
 	}
 
-	/**
-	 * 每日矿池分配
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void distributePtbInterest100() {
-		String strDate = DateUtil.format(DateUtil.date(), "yyyyMMdd");
-		//long类型日期
-		long currentDate = Long.parseLong(strDate);
-		long currentDateInt = Long.parseLong(strDate);
-
-		Map<String, Object> task = getTask(SysConstant.TSK_TYPE_100, currentDate + "");
-		if (!CollectionUtil.isEmpty(task)) {
-			log.debug("每日矿池分配任务已存在跳过");
-			return;
-		}
-		//添加日志
-		//rewardPoolConfigService.save();
-		//Integer todayInt = Integer.valueOf(DateUtil.format(DateUtil.date(), "yyyyMMdd"));
-		//用户等级
-		List<UserLevelBo> userLevelBoList = userInfoService.getUserLevelList();
-		//用户算力
-		List<UserComputingPowerBo> userComputingPowerBos = userInfoService.userComputingPower();
-
-		List<UserLevelConfig> userLevelConfigList = userLevelConfigService.lambdaQuery()
-			.orderByDesc(UserLevelConfig::getLevel)
-			.list().stream()
-			.map(record->{
-				record.setRewardRatio(record.getRewardRatio().divide(SysConstant.BAIFENBI, ConstantStatic.newScale, ConstantStatic.roundingModeNew));
-				return record;
-			}).collect(Collectors.toList());
-		BigDecimal totalComputingPower = userInfoService.userTotalComputingPower();
-		RewardPoolConfig miningConfig = rewardPoolConfigService.lambdaQuery()
-			.eq(RewardPoolConfig::getPoolType, 1)
-			.one();
-		//挖矿静态分红任务
-		miningPoolTask(miningConfig, userLevelBoList,userComputingPowerBos,totalComputingPower,userLevelConfigList);
-
-		RewardPoolConfig consumptionConfig = rewardPoolConfigService.lambdaQuery()
-			.eq(RewardPoolConfig::getPoolType, 2)
-			.one();
-		//商城消费分红
-		consumptionTask(consumptionConfig, userComputingPowerBos, totalComputingPower, userLevelBoList,userLevelConfigList);
-
-		RewardPoolConfig uCardFeeConfig = rewardPoolConfigService.lambdaQuery()
-			.eq(RewardPoolConfig::getPoolType, 3)
-			.one();
-		//u卡分红的流水类型和奖金记录类型有问题
-		//uCardFeeTask(uCardFeeConfig, userComputingPowerBos, totalComputingPower, userLevelBoList,userLevelConfigList);
-
-		//更新运行天数
-		String sysEnabled = sysParaServiceImpl.getValue(ConstantSys.biz_sys_enabled);
-		if(sysEnabled.equals("1")){
-			SysPara sysPara = sysParaServiceImpl.lambdaQuery()
-				.eq(SysPara::getParaCode, ConstantSys.biz_sys_run_days)
-				.one();
-			Integer i = Integer.valueOf(sysPara.getParaValue());
-			i =i+1;
-			sysPara.setParaValue(i+"");
-			sysParaServiceImpl.updateSysPara(sysPara);
-		}
-
-		//消费分红池分红任务
-/*		int i = addTask(SysConstant.TSK_TYPE_100, currentDate + "");
-		if (i != 1) {
-			throw new RuntimeException("添加任务类型100:每日释放线性订单失败");
-		}*/
-		//延迟删除
-		redissonTemplate.sendCleanCacheWithDelay(RedisConstant.XMS_PARAM + ConstantSys.biz_sys_run_days);
-	}
+//	/**
+//	 * 每日矿池分配
+//	 */
+//	@Transactional(rollbackFor = Exception.class)
+//	public void distributePtbInterest100() {
+//		String strDate = DateUtil.format(DateUtil.date(), "yyyyMMdd");
+//		//long类型日期
+//		long currentDate = Long.parseLong(strDate);
+//		long currentDateInt = Long.parseLong(strDate);
+//
+//		Map<String, Object> task = getTask(SysConstant.TSK_TYPE_100, currentDate + "");
+//		if (!CollectionUtil.isEmpty(task)) {
+//			log.debug("每日矿池分配任务已存在跳过");
+//			return;
+//		}
+//		//添加日志
+//		//rewardPoolConfigService.save();
+//		//Integer todayInt = Integer.valueOf(DateUtil.format(DateUtil.date(), "yyyyMMdd"));
+//		//用户等级
+//		List<UserLevelBo> userLevelBoList = userInfoService.getUserLevelList();
+//		//用户算力
+//		List<UserComputingPowerBo> userComputingPowerBos = userInfoService.userComputingPower();
+//
+//		List<UserLevelConfig> userLevelConfigList = userLevelConfigService.lambdaQuery()
+//			.orderByDesc(UserLevelConfig::getLevel)
+//			.list().stream()
+//			.map(record->{
+//				record.setRewardRatio(record.getRewardRatio().divide(SysConstant.BAIFENBI, ConstantStatic.newScale, ConstantStatic.roundingModeNew));
+//				return record;
+//			}).collect(Collectors.toList());
+//		BigDecimal totalComputingPower = userInfoService.userTotalComputingPower();
+//		RewardPoolConfig miningConfig = rewardPoolConfigService.lambdaQuery()
+//			.eq(RewardPoolConfig::getPoolType, 1)
+//			.one();
+//		//挖矿静态分红任务
+//		miningPoolTask(miningConfig, userLevelBoList,userComputingPowerBos,totalComputingPower,userLevelConfigList);
+//
+//		RewardPoolConfig consumptionConfig = rewardPoolConfigService.lambdaQuery()
+//			.eq(RewardPoolConfig::getPoolType, 2)
+//			.one();
+//		//商城消费分红
+//		consumptionTask(consumptionConfig, userComputingPowerBos, totalComputingPower, userLevelBoList,userLevelConfigList);
+//
+//		RewardPoolConfig uCardFeeConfig = rewardPoolConfigService.lambdaQuery()
+//			.eq(RewardPoolConfig::getPoolType, 3)
+//			.one();
+//		//u卡分红的流水类型和奖金记录类型有问题
+//		//uCardFeeTask(uCardFeeConfig, userComputingPowerBos, totalComputingPower, userLevelBoList,userLevelConfigList);
+//
+//		//更新运行天数
+//		String sysEnabled = sysParaServiceImpl.getValue(ConstantSys.biz_sys_enabled);
+//		if(sysEnabled.equals("1")){
+//			SysPara sysPara = sysParaServiceImpl.lambdaQuery()
+//				.eq(SysPara::getParaCode, ConstantSys.biz_sys_run_days)
+//				.one();
+//			Integer i = Integer.valueOf(sysPara.getParaValue());
+//			i =i+1;
+//			sysPara.setParaValue(i+"");
+//			sysParaServiceImpl.updateSysPara(sysPara);
+//		}
+//
+//		//消费分红池分红任务
+///*		int i = addTask(SysConstant.TSK_TYPE_100, currentDate + "");
+//		if (i != 1) {
+//			throw new RuntimeException("添加任务类型100:每日释放线性订单失败");
+//		}*/
+//		//延迟删除
+//		redissonTemplate.sendCleanCacheWithDelay(RedisConstant.XMS_PARAM + ConstantSys.biz_sys_run_days);
+//	}
 
 	/**
 	 * u卡分红订单
@@ -2512,7 +2686,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		}
 	}
 
-	private void consumptionTask(RewardPoolConfig consumptionConfig, List<UserComputingPowerBo> userComputingPowerBos,
+	/*private void consumptionTask(RewardPoolConfig consumptionConfig, List<UserComputingPowerBo> userComputingPowerBos,
 								 BigDecimal totalComputingPower, List<UserLevelBo> userLevelBoList,
 								 List<UserLevelConfig> userLevelConfigList) {
 		if (consumptionConfig.getDailyOutput().compareTo(BigDecimal.ZERO) > 0) {
@@ -2540,8 +2714,9 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		} else {
 			log.info("消费分红池今日无可分配产出");
 		}
-	}
+	}*/
 
+/*
 	private void miningPoolTask(RewardPoolConfig miningConfig, List<UserLevelBo> userLevelBoList,
 								List<UserComputingPowerBo> userComputingPowerList,BigDecimal totalComputingPower,
 								List<UserLevelConfig> userLevelConfigList) {
@@ -2696,38 +2871,8 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 			}
 		}
 	}
+*/
 
-	/**
-	 * 矿池动态分红的时候。根据等级获取t_user_money_log sourceType值
-	 *
-	 * @param level
-	 * @return
-	 */
-	private Integer getRewardSourceTypeByMiningLevel(Integer level) {
-/*		switch (level) {
-			case 1:
-				return ConstantType.xms_reward_record_source_type.type_2;
-			case 2:
-				return ConstantType.xms_reward_record_source_type.type_3;
-			case 3:
-				return ConstantType.xms_reward_record_source_type.type_4;
-			case 4:
-				return ConstantType.xms_reward_record_source_type.type_5;
-			case 5:
-				return ConstantType.xms_reward_record_source_type.type_6;
-			case 6:
-				return ConstantType.xms_reward_record_source_type.type_7;
-			case 7:
-				return ConstantType.xms_reward_record_source_type.type_8;
-			case 8:
-				return ConstantType.xms_reward_record_source_type.type_9;
-			case 9:
-				return ConstantType.xms_reward_record_source_type.type_10;
-			default:
-				throw new ServiceException("等级异常");
-		}*/
-		return 1;
-	}
 
 
 	/**
@@ -2736,30 +2881,30 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 	 * @param level
 	 * @return
 	 */
-	private Integer getRewardSourceTypeByConsumptionStatic(Integer level) {
-		switch (level) {
-			case 1:
-				return ConstantType.xms_reward_record_source_type.type_11;
-			case 2:
-				return ConstantType.xms_reward_record_source_type.type_12;
-			case 3:
-				return ConstantType.xms_reward_record_source_type.type_13;
-			case 4:
-				return ConstantType.xms_reward_record_source_type.type_14;
-			case 5:
-				return ConstantType.xms_reward_record_source_type.type_15;
-			case 6:
-				return ConstantType.xms_reward_record_source_type.type_16;
-			case 7:
-				return ConstantType.xms_reward_record_source_type.type_17;
-			case 8:
-				return ConstantType.xms_reward_record_source_type.type_18;
-			case 9:
-				return ConstantType.xms_reward_record_source_type.type_19;
-			default:
-				throw new ServiceException("等级异常");
-		}
-	}
+//	private Integer getRewardSourceTypeByConsumptionStatic(Integer level) {
+//		switch (level) {
+//			case 1:
+//				return ConstantType.xms_reward_record_source_type.type_11;
+//			case 2:
+//				return ConstantType.xms_reward_record_source_type.type_12;
+//			case 3:
+//				return ConstantType.xms_reward_record_source_type.type_13;
+//			case 4:
+//				return ConstantType.xms_reward_record_source_type.type_14;
+//			case 5:
+//				return ConstantType.xms_reward_record_source_type.type_15;
+//			case 6:
+//				return ConstantType.xms_reward_record_source_type.type_16;
+//			case 7:
+//				return ConstantType.xms_reward_record_source_type.type_17;
+//			case 8:
+//				return ConstantType.xms_reward_record_source_type.type_18;
+//			case 9:
+//				return ConstantType.xms_reward_record_source_type.type_19;
+//			default:
+//				throw new ServiceException("等级异常");
+//		}
+//	}
 
 	/**
 	 * 矿池动态分红的时候。根据等级获取t_user_money_log sourceType值
@@ -2879,7 +3024,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		}
 	}
 
-	private void distributeConsumptionDynamic(BigDecimal consumptionDynamicReward,
+	/*private void distributeConsumptionDynamic(BigDecimal consumptionDynamicReward,
 											  List<UserLevelBo> userLevelBoList,
 											  String orderCode,List<UserLevelConfig> userLevelConfigList) {
 		if (consumptionDynamicReward.compareTo(BigDecimal.ZERO) <= 0) {
@@ -2955,7 +3100,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		if (CollectionUtil.isNotEmpty(dynamicRewardRecordList)) {
 			rewardRecordService.saveBatch(dynamicRewardRecordList);
 		}
-	}
+	}*/
 
 	private void distributeUCardStatic(BigDecimal reward, List<UserComputingPowerBo> userComputingPowerList,
 									   BigDecimal totalComputingPower, String orderCode) {
@@ -2994,7 +3139,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 			RewardRecord rewardRecord = new RewardRecord();
 			rewardRecord.setUserId(userComputingPowerBo.getUserId());
 			rewardRecord.setAmount(eachReward);
-			rewardRecord.setSourceType(ConstantType.xms_reward_record_source_type.type_18);
+			//rewardRecord.setSourceType(ConstantType.xms_reward_record_source_type.type_18);
 			rewardRecord.setCoinType(ConstantType.user_money_coin_type.type_2);
 			rewardRecord.setSourceOrderCode(orderCode);
 			rewardRecord.setOrderCode(IDUtils.getSnowflakeStr());
@@ -3522,6 +3667,57 @@ private void bachUpdateMoneyValid7(List<UserMoney> userMoneyList) {
 		throw new ServiceException("更新资产结算更新回滚了");
 	}
 }
+
+	private void bachUpdateMoneyValid9(List<UserMoney> userMoneyList) {
+		int[] ints = jdbcTemplate.batchUpdate(SQL_VALID_NUM9, new BatchPreparedStatementSetter() {
+			@Override
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				ps.setTimestamp(1, new java.sql.Timestamp(userMoneyList.get(i).getUpdateTime().getTime()));
+				ps.setString(2, userMoneyList.get(i).getGtId());
+				ps.setBigDecimal(3, userMoneyList.get(i).getValidNum9());
+				ps.setString(4, userMoneyList.get(i).getSourceCode());
+				ps.setObject(5, userMoneyList.get(i).getSourceType());
+				ps.setObject(6, userMoneyList.get(i).getSourceId());
+				ps.setLong(7, userMoneyList.get(i).getId());
+			}
+
+			@Override
+			public int getBatchSize() {
+				return userMoneyList.size();
+			}
+		});
+		if (ArrayUtil.contains(ints, 0)) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			log.error("H赠送释放更新H余额回滚");
+			throw new ServiceException("H赠送释放更新H余额失败");
+		}
+	}
+
+	private void batchUpdateHGiftReleaseBucket(List<HGiftReleaseBucket> bucketList) {
+		int[] ints = jdbcTemplate.batchUpdate(SQL_H_GIFT_RELEASE_BUCKET_DAILY_RELEASE, new BatchPreparedStatementSetter() {
+			@Override
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				HGiftReleaseBucket bucket = bucketList.get(i);
+				ps.setTimestamp(1, new java.sql.Timestamp(bucket.getUpdateTime().getTime()));
+				ps.setBigDecimal(2, bucket.getReleasedAmount());
+				ps.setBigDecimal(3, bucket.getRemainingAmount());
+				ps.setInt(4, bucket.getReleasedDays());
+				ps.setInt(5, bucket.getLastReleaseDate());
+				ps.setInt(6, bucket.getStatus());
+				ps.setLong(7, bucket.getId());
+			}
+
+			@Override
+			public int getBatchSize() {
+				return bucketList.size();
+			}
+		});
+		if (ArrayUtil.contains(ints, 0)) {
+			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+			log.error("H赠送释放批量更新释放桶回滚");
+			throw new ServiceException("H赠送释放批量更新释放桶失败");
+		}
+	}
 
 private void batchHandleValidNum8Transfer(List<UserMoney> transferValidNum8List,
 										  List<UserMoney> transferValidNum3List,

@@ -36,6 +36,10 @@ public class ConstantStatic {
 
 	//资金小数保留8位数
 	public static final Integer eightScale = 8;
+
+	//H赠送释放固定天数
+	public static final Integer H_GIFT_RELEASE_DAYS = 100;
+
 	//舍掉
 	//public static final int roundingMode = BigDecimal.ROUND_DOWN;
 	public static final RoundingMode roundingModeNew = RoundingMode.DOWN;

@@ -149,6 +149,10 @@ public class WithdrawalServiceImpl extends ServiceImpl<WithdrawalMapper, Withdra
 		}else if(withdrawal.getStatus().equals(SysConstant.ONE)){
 			//发送到合约(内扣)
 			String tokenName = "H";
+			if(!withdrawal.getCoinType().equals(ConstantType.user_money_coin_type.type_9)){
+				tokenName = "ACP";
+			}
+
 			Map<String, Object> formParams = new HashMap<>();
 			formParams.put("orderNo", temp.getCode());
 			formParams.put("address", temp.getAccountNo());

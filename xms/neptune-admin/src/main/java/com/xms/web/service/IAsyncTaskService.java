@@ -20,12 +20,7 @@ public interface IAsyncTaskService {
 	void taskMsgCycle();
 
 
-	/**
-	 * 任务类型100 矿池分配
-	 */
-	void distributePtbInterest100();
-
-	/**
+		/**
 	 * 补偿基金订单赎回本期的时候.t+1时间到了但是还没有执行发放本金任务
 	 */
 	void compensateUnpaidPrincipalOrders();
@@ -39,7 +34,7 @@ public interface IAsyncTaskService {
 	/**
 	 * 任务类型102 v9节点均分提现手续费分红任务
 	 */
-	void distributePtbInterest102(Integer parDate);
+	//void distributePtbInterest102(Integer parDate);
 
 	/**
 	 * 查询没有处理的节点订单
@@ -91,4 +86,9 @@ public interface IAsyncTaskService {
 	 * handelStakeOrder105 补偿任务
 	 */
 	void handelStakeOrder105();
+
+	/**
+	 * 任务类型106 H赠送释放每日释放
+	 */
+	void handelHGiftRelease106();
 }

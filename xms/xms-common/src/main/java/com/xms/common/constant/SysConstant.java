@@ -180,6 +180,11 @@ public interface SysConstant {
 	 */
 	String TSK_TYPE_105 = "105";
 
+	/**
+	 * 任务类型106 H赠送释放每日释放
+	 */
+	String TSK_TYPE_106 = "106";
+
 
 	String CALLBACK_SUCCESS = "success";
 	String CALLBACK_FAIL = "fail";
