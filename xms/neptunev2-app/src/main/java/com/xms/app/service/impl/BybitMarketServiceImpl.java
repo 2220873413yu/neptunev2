@@ -16,12 +16,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class BybitMarketServiceImpl implements BybitMarketService {
+	private static final String GATE_ACP_USDT = "ACP_USDT";
+
 	@Autowired
 	private XmsRedis xmsRedis;
 
@@ -61,6 +64,47 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 		PriceResponse data = new PriceResponse();
 		data.setSn("hu");
 		data.setLp(String.valueOf(tickerJson.getByPath("result.list.0.lastPrice")));
+		return data;
+	}
+
+	@Override
+	public ResultPista<PriceResponse> gateAcpSpotPrice() {
+		try {
+			PriceResponse data = xmsRedis.get(
+				RedisConstant.GATE_SPOT_PRICE + GATE_ACP_USDT,
+				() -> fetchGateAcpPriceData(),
+				8L,
+				TimeUnit.SECONDS
+			);
+			if (data == null) {
+				return ResultPista.fail("Gate ACP 最新价获取失败");
+			}
+			return ResultPista.data(data);
+		} catch (IORuntimeException ex) {
+			return ResultPista.fail("Gate 请求失败: " + ex.getMessage());
+		} catch (JSONException ex) {
+			return ResultPista.fail("Gate 解析失败: " + ex.getMessage());
+		}
+	}
+
+	private PriceResponse fetchGateAcpPriceData() {
+		String tickerUrl = "https://api.gateio.ws/api/v4/spot/tickers?currency_pair=" + GATE_ACP_USDT;
+
+		String tickerBody = HttpRequest.get(tickerUrl).timeout(5000).execute().body();
+		JSONArray tickerArray = JSONUtil.parseArray(tickerBody);
+		if (tickerArray.isEmpty()) {
+			return null;
+		}
+
+		JSONObject ticker = tickerArray.getJSONObject(0);
+		String lastPrice = ticker.getStr("last");
+		if (lastPrice == null) {
+			return null;
+		}
+
+		PriceResponse data = new PriceResponse();
+		data.setSn(GATE_ACP_USDT);
+		data.setLp(lastPrice);
 		return data;
 	}
 
@@ -195,6 +239,74 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 		}
 		Collections.reverse(filtered); // Bybit默认倒序，反转后按时间升序
 
+		data.setKl(filtered);
+		return data;
+	}
+
+	@Override
+	public ResultPista<KlineResponse> gateAcpSpotKline() {
+		try {
+			KlineResponse data = xmsRedis.get(
+				RedisConstant.GATE_SPOT_KLINE + GATE_ACP_USDT + ":1d:7d",
+				() -> fetchGateAcpKlineData(),
+				60L,
+				TimeUnit.SECONDS
+			);
+			if (data == null) {
+				return ResultPista.fail("Gate ACP K线获取失败");
+			}
+			return ResultPista.data(data);
+		} catch (IORuntimeException ex) {
+			return ResultPista.fail("Gate 请求失败: " + ex.getMessage());
+		} catch (JSONException ex) {
+			return ResultPista.fail("Gate 解析失败: " + ex.getMessage());
+		}
+	}
+
+	private KlineResponse fetchGateAcpKlineData() {
+		String interval = "D";
+		String gateInterval = "1d";
+		String klineUrl = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair="
+			+ GATE_ACP_USDT + "&interval=" + gateInterval + "&limit=7";
+
+		String klineBody = HttpRequest.get(klineUrl).timeout(5000).execute().body();
+		JSONArray rawKline = JSONUtil.parseArray(klineBody);
+		if (rawKline.isEmpty()) {
+			return null;
+		}
+
+		List<JSONArray> converted = new ArrayList<>();
+		for (Object item : rawKline) {
+			JSONArray row = JSONUtil.parseArray(item);
+			if (row.size() < 7) {
+				continue;
+			}
+			JSONArray targetRow = new JSONArray();
+			targetRow.add(Long.parseLong(row.getStr(0)) * 1000L);
+			targetRow.add(row.getStr(5));
+			targetRow.add(row.getStr(3));
+			targetRow.add(row.getStr(4));
+			targetRow.add(row.getStr(2));
+			targetRow.add(row.getStr(6));
+			targetRow.add(row.getStr(1));
+			converted.add(targetRow);
+		}
+
+		if (converted.isEmpty()) {
+			return null;
+		}
+
+		converted.sort(Comparator.comparingLong(row -> Long.parseLong(String.valueOf(row.get(0)))));
+
+		long start = Long.parseLong(String.valueOf(converted.get(0).get(0)));
+		long end = Long.parseLong(String.valueOf(converted.get(converted.size() - 1).get(0)));
+		List<Object> filtered = new ArrayList<>(converted);
+
+		KlineResponse data = new KlineResponse();
+		data.setSn(GATE_ACP_USDT);
+		data.setIv(interval);
+		data.setSt(start);
+		data.setEt(end);
 		data.setKl(filtered);
 		return data;
 	}

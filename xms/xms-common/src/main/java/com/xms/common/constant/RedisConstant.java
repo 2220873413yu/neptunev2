@@ -82,6 +82,12 @@ public interface RedisConstant {
 	String BYBIT_SPOT_PRICE = REDIS_PREFIX + "bybit:spot:price:";
 
 	/**
+	 * Gate 现货缓存key
+	 */
+	String GATE_SPOT_KLINE = REDIS_PREFIX + "gate:spot:kline:";
+	String GATE_SPOT_PRICE = REDIS_PREFIX + "gate:spot:price:";
+
+	/**
 	 * XMS 代币价格缓存key
 	 */
 	String XMS_TOKEN_PRICE_ACP_USDT = "xms:token:price:acp:usdt";

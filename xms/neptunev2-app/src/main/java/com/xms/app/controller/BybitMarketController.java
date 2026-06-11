@@ -8,7 +8,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Api(tags = "Bybit行情")
 @RestController
-@RequestMapping("/api/bybit")
 public class BybitMarketController {
 
 
@@ -30,7 +28,7 @@ public class BybitMarketController {
 	 * kline -> [timestamp, open, high, low, close, volume, turnover]
 	 */
 	@ApiOperation(value = "Bybit现货K线")
-	@GetMapping(value = "/spot/kie")
+	@GetMapping(value = "/api/bybit/spot/kie")
 	@Anonymous
 	public ResultPista<BybitMarketServiceImpl.KlineResponse> bybitSpotKline() {
 		return bybitMarketService.bybitSpotKline();
@@ -40,10 +38,32 @@ public class BybitMarketController {
 	 * Bybit 现货最新价
 	 */
 	@ApiOperation(value = "Bybit现货最新价")
-	@GetMapping(value = "/spot/pe")
+	@GetMapping(value = "/api/bybit/spot/pe")
 	@Anonymous
 	public ResultPista<BybitMarketServiceImpl.PriceResponse> bybitSpotPrice() {
 		return bybitMarketService.bybitSpotPrice();
+	}
+
+	/**
+	 * Gate ACP 现货K线（默认取最近7天日线）
+	 * 返回数据结构说明：
+	 * kline -> [timestamp, open, high, low, close, volume, turnover]
+	 */
+	@ApiOperation(value = "Gate ACP现货K线")
+	@GetMapping(value = "/api/gate/spot/kie")
+	@Anonymous
+	public ResultPista<BybitMarketServiceImpl.KlineResponse> gateAcpSpotKline() {
+		return bybitMarketService.gateAcpSpotKline();
+	}
+
+	/**
+	 * Gate ACP 现货最新价
+	 */
+	@ApiOperation(value = "Gate ACP现货最新价")
+	@GetMapping(value = "/api/gate/spot/pe")
+	@Anonymous
+	public ResultPista<BybitMarketServiceImpl.PriceResponse> gateAcpSpotPrice() {
+		return bybitMarketService.gateAcpSpotPrice();
 	}
 
 }
