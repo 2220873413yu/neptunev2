@@ -10,6 +10,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="userId"    column="user_id"    />
         <result property="stakeRoundId"    column="stake_round_id"    />
         <result property="stakeAmount"    column="stake_amount"    />
+        <result property="oldHAmount"    column="old_h_amount"    />
         <result property="depositSourceType"    column="deposit_source_type"    />
         <result property="acpPriceUsdtSnapshot"    column="acp_price_usdt_snapshot"    />
         <result property="hPriceUsdtSnapshot"    column="h_price_usdt_snapshot"    />
@@ -28,7 +29,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStakeOrderVo">
-        select belong_user_id, create_day, biz_status, id, order_no, user_id, stake_round_id, stake_amount,
+        select belong_user_id, create_day, biz_status, id, order_no, user_id, stake_round_id, stake_amount, old_h_amount,
                deposit_source_type, acp_price_usdt_snapshot, h_price_usdt_snapshot, deposit_usdt_amount,
                gift_ratio_snapshot, gift_h_amount, status, tx_hash, remark, create_time, update_time
         from t_stake_order
@@ -45,6 +46,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="belongUserId != null "> and belong_user_id = #{belongUserId}</if>
             <if test="stakeRoundId != null "> and stake_round_id = #{stakeRoundId}</if>
             <if test="stakeAmount != null "> and stake_amount = #{stakeAmount}</if>
+            <if test="oldHAmount != null "> and old_h_amount = #{oldHAmount}</if>
             <if test="depositSourceType != null "> and deposit_source_type = #{depositSourceType}</if>
             <if test="status != null "> and status = #{status}</if>
             <if test="txHash != null  and txHash != ''"> and tx_hash = #{txHash}</if>

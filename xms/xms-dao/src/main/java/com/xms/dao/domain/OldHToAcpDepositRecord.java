@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.xms.common.annotation.Excel;
 import com.xms.common.core.domain.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
@@ -62,6 +63,7 @@ public class OldHToAcpDepositRecord extends BaseEntity {
 	/** H当时U价快照 */
 	@Excel(name = "H单价U", sort = 6)
 	@ApiModelProperty(value = "H当时U价快照")
+	@JsonProperty("hPriceUsdtSnapshot")
 	private BigDecimal hPriceUsdtSnapshot;
 
 	/** 旧H折U价值 */

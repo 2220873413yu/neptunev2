@@ -28,4 +28,11 @@ public interface XmsTokenPriceService {
 	 * @return ACP/H 价格快照
 	 */
 	AcpHPriceSnapshot getAcpHPriceSnapshot();
+
+	/**
+	 * 从 Gate 获取 ACP/H 价格快照。
+	 *
+	 * @return ACP/H 价格快照
+	 */
+	AcpHPriceSnapshot getGateAcpHPriceSnapshot();
 }

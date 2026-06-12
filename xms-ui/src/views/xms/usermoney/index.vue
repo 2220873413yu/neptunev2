@@ -91,12 +91,13 @@
         <el-table-column label="工作室收益" align="center" prop="validNum6" sortable="custom" :sort-orders="['descending', 'ascending']" />
         <el-table-column label="贡献分" align="center" prop="validNum7" sortable="custom" :sort-orders="['descending', 'ascending']" />
         <el-table-column label="今日总动态收益" align="center" prop="validNum8" sortable="custom" :sort-orders="['descending', 'ascending']" />
+        <el-table-column label="H" align="center" prop="validNum9" />
 <!--
         <el-table-column label="资产5余额数" align="center" prop="validNum5" />
         <el-table-column label="资产6余额数" align="center" prop="validNum6" />
         <el-table-column label="资产7余额数" align="center" prop="validNum7" />
         <el-table-column label="资产8余额数" align="center" prop="validNum8" />
-        <el-table-column label="资产9余额数" align="center" prop="validNum9" />-->
+        -->
 <!--        <el-table-column label="创建时间" align="center" prop="createTime" >
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createTime) }}</span>

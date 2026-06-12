@@ -8,6 +8,10 @@ public interface BybitMarketService {
 
 	ResultPista<BybitMarketServiceImpl.PriceResponse> bybitSpotPrice();
 
+	ResultPista<BybitMarketServiceImpl.KlineResponse> bybitHSpotKline();
+
+	ResultPista<BybitMarketServiceImpl.PriceResponse> bybitHSpotPrice();
+
 	ResultPista<BybitMarketServiceImpl.KlineResponse> gateAcpSpotKline();
 
 	ResultPista<BybitMarketServiceImpl.PriceResponse> gateAcpSpotPrice();

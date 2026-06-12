@@ -1174,11 +1174,15 @@ public class BizUserServiceImpl implements BizUserService {
 				if (inviteUser == null) {
 					throw new ServiceException(ResponseCode.CODE_1010);
 				}
+				//todo 旧系统有业绩也能邀请人
 				Long count = userStakePositionService.lambdaQuery()
 					.eq(UserStakePosition::getUserId, inviteUser.getUserId())
 					.count();
 				if(count<=0){
-					throw new ServiceException(ResponseCode.CODE_1256);
+					//判断有没有旧数据入金
+					if(inviteUser.getOldPerformance().compareTo(BigDecimal.ZERO)<=0){
+						throw new ServiceException(ResponseCode.CODE_1256);
+					}
 				}
 			}
 			if (inviteUser == null) {

@@ -124,9 +124,9 @@
           {{scope.row.peerRewardRatio}}%
         </template>
       </el-table-column>
-      <el-table-column align="center" label="购买贡献分最低h代币限制" prop="minBuyAmount" >
+      <el-table-column align="center" label="购买贡献分最低ACP代币限制" prop="minBuyAmount" >
         <template slot-scope="scope">
-          {{scope.row.minBuyAmount}}H
+          {{scope.row.minBuyAmount}}ACP
         </template>
       </el-table-column>
 <!--      <el-table-column label="是否二选一" align="center" prop="isTwoChooseOne">

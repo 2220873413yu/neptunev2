@@ -107,17 +107,13 @@ public class BizStakeServiceImpl implements BizStakeService {
 
 		String sign = SignUtil.getSign(map, false, false, newMd5Key);
 		String osName = SystemUtil.getOsInfo().getName();
-	/*	if (!osName.toUpperCase().contains(SysConstant.OS_NAME_WINDOWS)) {
+		if (!osName.toUpperCase().contains(SysConstant.OS_NAME_WINDOWS)) {
 			if (!sign.equals(req.getSign())) {
 				log.error("验签失败");
 				return ResultPista.fail("验签失败");
 			}
-		}*/
-
-		if (!sign.equals(req.getSign())) {
-			log.error("验签失败");
-			return ResultPista.fail("验签失败");
 		}
+
 
 		req.setAmount(req.getAmount().setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew));
 		BigDecimal oldHAmount = req.getAmount();
@@ -150,7 +146,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 			throw new ServiceException(ResponseCode.CODE_1260);
 		}
 
-		AcpHPriceSnapshot priceSnapshot = xmsTokenPriceService.getAcpHPriceSnapshot();
+		AcpHPriceSnapshot priceSnapshot = xmsTokenPriceService.getGateAcpHPriceSnapshot();
 		//入金赠送比例
 		BigDecimal giftRatioSnapshot = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_acp_h_gift_ratio))
 			.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
@@ -239,6 +235,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 		StakeOrder stakeOrder = new StakeOrder();
 		stakeOrder.setOrderNo(orderNo);
 		stakeOrder.setStakeAmount(acpDepositAmount);
+		stakeOrder.setOldHAmount(oldHAmount);
 		stakeOrder.setDepositSourceType(ConstantType.stake_order_deposit_source_type.type_3);
 		fillAcpDepositStakeSnapshot(stakeOrder, priceSnapshot, oldHUsdtAmount, giftRatioSnapshot);
 		stakeOrder.setUserId(userId);
@@ -512,6 +509,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 		StakeOrder stakeOrder = new StakeOrder();
 		stakeOrder.setOrderNo(orderNo);
 		stakeOrder.setStakeAmount(req.getAmount());
+		stakeOrder.setOldHAmount(BigDecimal.ZERO);
 		stakeOrder.setDepositSourceType(ConstantType.stake_order_deposit_source_type.type_1);
 		fillAcpDepositStakeSnapshot(stakeOrder, priceSnapshot, depositUsdtAmount, giftRatioSnapshot);
 		stakeOrder.setUserId(userId);

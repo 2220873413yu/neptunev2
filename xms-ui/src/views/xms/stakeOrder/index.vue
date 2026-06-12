@@ -47,6 +47,16 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="入金来源" prop="depositSourceType" label-width="120px">
+        <el-select v-model="queryParams.depositSourceType" placeholder="请选择入金来源" clearable>
+          <el-option
+            v-for="item in depositSourceTypeOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
 <!--      <el-form-item label="本次质押金额(单位H)" prop="stakeAmount">
         <el-input
           v-model="queryParams.stakeAmount"
@@ -143,11 +153,27 @@
       <el-table-column label="业绩归属上级ID" align="center" prop="belongUserId" />
 
       <el-table-column label="轮次编号" align="center" prop="stakeRoundId" />
-      <el-table-column label="质押金额" align="center" prop="stakeAmount" >
+      <el-table-column label="入金来源" align="center" prop="depositSourceType" width="150">
         <template slot-scope="scope">
-          <span>{{ scope.row.stakeAmount }} H</span>
+          <span>{{ formatDepositSourceType(scope.row.depositSourceType) }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="ACP入金数量" align="center" prop="stakeAmount" width="130">
+        <template slot-scope="scope">
+          <span>{{ scope.row.stakeAmount }} ACP</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="旧系统入金H数量" align="center" prop="oldHAmount" width="150">
+        <template slot-scope="scope">
+          <span>{{ formatOldHAmount(scope.row) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="H单价U" align="center" width="110">
+        <template slot-scope="scope">
+          <span>{{ getHPriceUsdtSnapshot(scope.row) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="ACP单价U" align="center" prop="acpPriceUsdtSnapshot" width="120" />
 
       <el-table-column align="center" label="订单状态" prop="status">
         <template slot-scope="scope">
@@ -202,8 +228,8 @@
         <el-form-item label="轮次表id" prop="stakeRoundId">
           <el-input v-model="form.stakeRoundId" placeholder="请输入轮次表id" />
         </el-form-item>
-        <el-form-item label="本次质押金额(单位H)" prop="stakeAmount">
-          <el-input v-model="form.stakeAmount" placeholder="请输入本次质押金额(单位H)" />
+        <el-form-item label="ACP入金数量" prop="stakeAmount">
+          <el-input v-model="form.stakeAmount" placeholder="请输入ACP入金数量" />
         </el-form-item>
         <el-form-item label="链上交易hash" prop="txHash">
           <el-input v-model="form.txHash" placeholder="请输入链上交易hash" />
@@ -250,6 +276,11 @@ export default {
       total: 0,
       // 质押订单表格数据
       stakeOrderList: [],
+      // 入金来源选项
+      depositSourceTypeOptions: [
+        { value: 1, label: "正常ACP入金" },
+        { value: 3, label: "旧系统H换ACP入金" }
+      ],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -266,6 +297,7 @@ export default {
         userId: null,
         stakeRoundId: null,
         stakeAmount: null,
+        depositSourceType: null,
         status: null,
         txHash: null,
         successTime: null,
@@ -285,7 +317,7 @@ export default {
           { required: true, message: "轮次表id不能为空", trigger: "blur" }
         ],
         stakeAmount: [
-          { required: true, message: "本次质押金额(单位H)不能为空", trigger: "blur" }
+          { required: true, message: "ACP入金数量不能为空", trigger: "blur" }
         ],
         status: [
           { required: true, message: "状态:1成功,2:未处理不能为空", trigger: "change" }
@@ -324,6 +356,10 @@ export default {
         userId: null,
         stakeRoundId: null,
         stakeAmount: null,
+        oldHAmount: null,
+        depositSourceType: null,
+        acpPriceUsdtSnapshot: null,
+        hpriceUsdtSnapshot: null,
         status: null,
         txHash: null,
         successTime: null,
@@ -332,6 +368,19 @@ export default {
         updateTime: null
       };
       this.resetForm("form");
+    },
+    formatDepositSourceType(value) {
+      const option = this.depositSourceTypeOptions.find(item => item.value === Number(value));
+      return option ? option.label : value;
+    },
+    formatOldHAmount(row) {
+      if (Number(row.depositSourceType) !== 3) {
+        return "-";
+      }
+      return `${row.oldHAmount || 0} H`;
+    },
+    getHPriceUsdtSnapshot(row) {
+      return row.hpriceUsdtSnapshot || row.hPriceUsdtSnapshot || "-";
     },
     /** 搜索按钮操作 */
     handleQuery() {

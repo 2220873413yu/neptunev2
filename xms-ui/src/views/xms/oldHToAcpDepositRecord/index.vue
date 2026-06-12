@@ -70,7 +70,11 @@
       <el-table-column align="center" label="用户ID" prop="userId" width="110" />
       <el-table-column align="center" label="钱包地址" min-width="180" prop="account" show-overflow-tooltip />
       <el-table-column align="center" label="旧H数量" prop="oldHAmount" width="120" />
-      <el-table-column align="center" label="H单价U" prop="hPriceUsdtSnapshot" width="110" />
+      <el-table-column align="center" label="H单价U" width="110">
+        <template slot-scope="scope">
+          <span>{{ getHPriceUsdtSnapshot(scope.row) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="折U价值" prop="oldHUsdtAmount" width="120" />
       <el-table-column align="center" label="ACP单价U" prop="acpPriceUsdtSnapshot" width="120" />
       <el-table-column align="center" label="ACP入金数量" prop="acpDepositAmount" width="130" />
@@ -146,6 +150,9 @@ export default {
     },
     getStatusLabel(value) {
       return value === 1 ? '成功' : value
+    },
+    getHPriceUsdtSnapshot(row) {
+      return row.hpriceUsdtSnapshot || row.hPriceUsdtSnapshot || '-'
     }
   }
 }

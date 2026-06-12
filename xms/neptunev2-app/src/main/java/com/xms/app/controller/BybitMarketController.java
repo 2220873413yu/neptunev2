@@ -45,6 +45,28 @@ public class BybitMarketController {
 	}
 
 	/**
+	 * Bybit H 现货K线（默认取最近7天日线）
+	 * 返回数据结构说明：
+	 * kline -> [timestamp, open, high, low, close, volume, turnover]
+	 */
+	@ApiOperation(value = "Bybit H现货K线")
+	@GetMapping(value = "/api/bybit/spot/h/kie")
+	@Anonymous
+	public ResultPista<BybitMarketServiceImpl.KlineResponse> bybitHSpotKline() {
+		return bybitMarketService.bybitHSpotKline();
+	}
+
+	/**
+	 * Bybit H 现货最新价
+	 */
+	@ApiOperation(value = "Bybit H现货最新价")
+	@GetMapping(value = "/api/bybit/spot/h/pe")
+	@Anonymous
+	public ResultPista<BybitMarketServiceImpl.PriceResponse> bybitHSpotPrice() {
+		return bybitMarketService.bybitHSpotPrice();
+	}
+
+	/**
 	 * Gate ACP 现货K线（默认取最近7天日线）
 	 * 返回数据结构说明：
 	 * kline -> [timestamp, open, high, low, close, volume, turnover]

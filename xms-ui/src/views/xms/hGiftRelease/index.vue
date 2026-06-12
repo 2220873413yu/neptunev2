@@ -104,10 +104,10 @@
         </template>
       </el-table-column>
       <el-table-column align="center" label="来源订单号" min-width="170" prop="sourceOrderNo" />
-      <el-table-column align="center" label="总量(H)" prop="totalAmount" width="120" />
-      <el-table-column align="center" label="已释放(H)" prop="releasedAmount" width="120" />
-      <el-table-column align="center" label="剩余(H)" prop="remainingAmount" width="120" />
-      <el-table-column align="center" label="每日释放(H)" prop="dailyReleaseAmount" width="130" />
+      <el-table-column align="center" label="总量(ACP)" prop="totalAmount" width="120" />
+      <el-table-column align="center" label="已释放(ACP)" prop="releasedAmount" width="120" />
+      <el-table-column align="center" label="剩余(ACP)" prop="remainingAmount" width="120" />
+      <el-table-column align="center" label="每日释放(ACP)" prop="dailyReleaseAmount" width="130" />
       <el-table-column align="center" label="释放天数" prop="releaseDays" width="100" />
       <el-table-column align="center" label="已释放天数" prop="releasedDays" width="110" />
       <el-table-column align="center" label="状态" prop="status" width="100">

@@ -68,6 +68,11 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 	}
 
 	@Override
+	public ResultPista<PriceResponse> bybitHSpotPrice() {
+		return bybitSpotPrice();
+	}
+
+	@Override
 	public ResultPista<PriceResponse> gateAcpSpotPrice() {
 		try {
 			PriceResponse data = xmsRedis.get(
@@ -241,6 +246,11 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 
 		data.setKl(filtered);
 		return data;
+	}
+
+	@Override
+	public ResultPista<KlineResponse> bybitHSpotKline() {
+		return bybitSpotKline();
 	}
 
 	@Override
