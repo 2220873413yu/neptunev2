@@ -164,11 +164,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 		} else {
 			userId = userInfo.getUserId();
 		}
-		//旧系统入金不限制最低入金量
-//		BigDecimal minStakeAmount = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_min_stake_amount));
-//		if (acpDepositAmount.compareTo(minStakeAmount) < 0) {
-//			status = 2;
-//		}
+
 
 		if (userInfo != null && status == 1) {
 			//个人业绩

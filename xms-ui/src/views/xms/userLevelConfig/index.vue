@@ -233,10 +233,10 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="购买贡献分最低h代币限制" prop="minBuyAmount">
+        <el-form-item label="购买贡献分最低ACP代币限制" prop="minBuyAmount">
           <el-input v-model="form.minBuyAmount"
                     oninput="if(isNaN(value)) { value = null } else { value = value.replace('.', '') }"
-                    placeholder="请输入购买贡献分最低h代币限制" />
+                    placeholder="请输入购买贡献分最低ACP代币限制" />
         </el-form-item>
 
         <el-form-item label="级差奖比例" prop="rewardRatio">
@@ -334,7 +334,7 @@ export default {
           { validator: validateDecimalRate, message: "平级奖比例不能为空", trigger: "blur" }
         ],
         minBuyAmount: [
-          { required: true, message: "购买贡献分最低h代币限制不能为空", trigger: "blur" }
+          { required: true, message: "购买贡献分最低ACP代币限制不能为空", trigger: "blur" }
         ],
         hasStudioSubsidy: [
           { required: true, message: "请选择是否工作室补贴不能为空", trigger: "blur" }

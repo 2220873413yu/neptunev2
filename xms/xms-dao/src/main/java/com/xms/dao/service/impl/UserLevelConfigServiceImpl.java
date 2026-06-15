@@ -50,7 +50,7 @@ public class UserLevelConfigServiceImpl extends XmsDataServiceImpl<UserLevelConf
 		}
 
 		if(userLevelConfig.getMinBuyAmount().compareTo(BigDecimal.ZERO)<0){
-			throw new ServiceException("购买贡献分最低h代币限制不能小于0");
+			throw new ServiceException("购买贡献分最低ACP代币限制不能小于0");
 		}
 		updateById(userLevelConfig);
 		return 1;

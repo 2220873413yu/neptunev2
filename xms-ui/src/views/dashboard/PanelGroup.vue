@@ -159,7 +159,7 @@
                   </div>
                 </div>
                 <div class="data-item">
-                  <div class="data-label">全网购买贡献分消耗H</div>
+                  <div class="data-label">全网购买贡献分消耗ACP</div>
                   <div class="data-value">
                     <count-to :startVal='0'
                               :decimals="getDecimalLen(fromData.v44)"
@@ -379,7 +379,7 @@
                   </div>
                 </div>
                 <div class="data-item">
-                  <div class="data-label">今日购买贡献分花费H</div>
+                  <div class="data-label">今日购买贡献分花费ACP</div>
                   <div class="data-value">
                     <count-to :startVal='0'
                               :decimals="getDecimalLen(fromData.v43)"

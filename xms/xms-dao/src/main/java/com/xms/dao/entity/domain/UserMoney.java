@@ -96,7 +96,10 @@ public class UserMoney {
 	@Excel(name = "今日总动态收益", sort = 8)
     private BigDecimal validNum8;
 
-    @ApiModelProperty(value = "可用余额数")
+	/**
+	 * H代币
+	 */
+    @ApiModelProperty(value = "H代币")
     private BigDecimal validNum9;
 
 	/**

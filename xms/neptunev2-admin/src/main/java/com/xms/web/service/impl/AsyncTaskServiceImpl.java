@@ -1886,6 +1886,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 			//处理质押订单收益任务
 			List<UserStakePosition> userStakePositionList = userStakePositionService.lambdaQuery()
 				.eq(UserStakePosition::getStatus, 1)
+				.gt(UserStakePosition::getTotalStakeAmount,BigDecimal.ZERO)
 				.eq(UserStakePosition::getStakeRoundId, stakeRound.getId())
 				.list();
 			if (CollectionUtil.isNotEmpty(userStakePositionList)) {

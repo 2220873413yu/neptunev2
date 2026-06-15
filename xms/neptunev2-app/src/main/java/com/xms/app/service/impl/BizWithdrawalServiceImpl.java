@@ -7,10 +7,9 @@ import cn.hutool.system.SystemUtil;
 import com.github.pagehelper.PageInfo;
 import com.uduncloud.sdk.domain.ResultMsg;
 import com.xms.app.entity.bo.WithdrawalCallbackBo;
+import com.xms.app.entity.dto.ReleaseBucketListDto;
 import com.xms.app.entity.req.JuNotifyReq;
-import com.xms.app.entity.resp.WithdrawalConfigResp;
-import com.xms.app.entity.resp.WithdrawalInfo;
-import com.xms.app.entity.resp.WithdrawalSummaryResp;
+import com.xms.app.entity.resp.*;
 import com.xms.app.entity.vo.UserBankInfoVo;
 import com.xms.app.entity.vo.UserBankVo;
 import com.xms.app.entity.vo.WithdrawalVo;
@@ -105,6 +104,34 @@ public class BizWithdrawalServiceImpl implements BizWithdrawalService {
 
 	@Value("${lq.md5Key}")
 	private String md5Key;
+
+	@Autowired
+	private IHGiftReleaseBucketService hGiftReleaseBucketService;
+
+	@Override
+	public GiftReleaseBucketDto giftReleaseBucket() {
+		GiftReleaseBucketDto result = new GiftReleaseBucketDto();
+		List<HGiftReleaseBucket> list = hGiftReleaseBucketService.lambdaQuery()
+			.eq(HGiftReleaseBucket::getUserId, SecurityUtils.getLoginAppUser().getUserId())
+			.eq(HGiftReleaseBucket::getStatus, 1)
+			.select(HGiftReleaseBucket::getReleasedAmount, HGiftReleaseBucket::getTotalAmount)
+			.list();
+		if (CollectionUtil.isNotEmpty(list)) {
+			BigDecimal totalAmount = BigDecimal.ZERO;
+			BigDecimal releasedAmount = BigDecimal.ZERO;
+			for (HGiftReleaseBucket bucket : list) {
+				BigDecimal bucketLockedAmount = bucket.getTotalAmount().subtract(bucket.getReleasedAmount());
+				if (bucketLockedAmount.compareTo(BigDecimal.ZERO) < 0) {
+					bucketLockedAmount = BigDecimal.ZERO;
+				}
+				totalAmount = totalAmount.add(bucket.getTotalAmount());
+				releasedAmount = releasedAmount.add(bucket.getReleasedAmount());
+			}
+			result.setTotalAmount(totalAmount);
+			result.setReleasedAmount(releasedAmount);
+		}
+		return result;
+	}
 
 	@Override
 	public List<WithdrawalConfigResp> withdrawalConfig() {
@@ -623,9 +650,28 @@ public class BizWithdrawalServiceImpl implements BizWithdrawalService {
 					UserInfo ShareUserInfo = userInfoService.lambdaQuery()
 						.eq(UserInfo::getAccount, shareAddress)
 						.one();
+					//手续费分红地址1 分配85%
+					BigDecimal shareAddressReward = shareReward.multiply(new BigDecimal("0.85"))
+						.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
 					if (ShareUserInfo != null) {
-						int i = userWalletServiceImpl.handerUserMoney(shareReward, withdrawal.getCode(), ShareUserInfo.getUserId(),
+						int i = userWalletServiceImpl.handerUserMoney(shareAddressReward, withdrawal.getCode(), ShareUserInfo.getUserId(),
 							ShareUserInfo.getUserId(), ConstantType.user_money_log_source_type.type_11, ConstantType.user_money_coin_type.type_5);
+						if (i != 1) {
+							throw new ServiceException(ResponseCode.CODE_1002);
+						}
+					}
+
+
+					//手续费分红地址2
+					String shareAddress1 = sysParaServiceImpl.getValue(ConstantSys.biz_withdrawal_fee_collect_address1);
+					UserInfo ShareUserInfo1 = userInfoService.lambdaQuery()
+						.eq(UserInfo::getAccount, shareAddress1)
+						.one();
+					if (ShareUserInfo1 != null) {
+						BigDecimal shareAddress1Reward = shareReward.subtract(shareAddressReward)
+							.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
+						int i = userWalletServiceImpl.handerUserMoney(shareAddress1Reward, withdrawal.getCode(), ShareUserInfo1.getUserId(),
+							ShareUserInfo1.getUserId(), ConstantType.user_money_log_source_type.type_11, ConstantType.user_money_coin_type.type_5);
 						if (i != 1) {
 							throw new ServiceException(ResponseCode.CODE_1002);
 						}

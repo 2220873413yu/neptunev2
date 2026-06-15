@@ -96,8 +96,8 @@ public class UserMoneyController {
 	 *
 	 * @param pageIndex  当前页 默认10
 	 * @param pageSize   每页长度 默认20(最大20)
-	 * @param coinType   币种类型 1:节点收益 2:静态收益 3:动态收益 4:财富收益 5:魔盒收益(保险仓/手续费) 6:工作室收益 7:贡献分(传值例如:1,3,4)
-	 * @param sourceType 来源类型 xxx
+	 * @param coinType   币种类型 1:节点收益 2:静态收益 3:动态收益 4:财富收益 5:魔盒收益(保险仓/手续费) 6:工作室收益 7:贡献分(传值例如:1,3,4) 9:h代币
+	 * @param sourceType 来源类型 xxx  33:H赠送释放
 	 * @return
 	 */
 	@ApiOperation(value = "钱包流水列表")

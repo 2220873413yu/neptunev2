@@ -10,9 +10,8 @@ import com.binance.connector.client.common.configuration.SignatureConfiguration;
 import com.binance.connector.client.wallet.rest.api.WalletRestApi;
 import com.binance.connector.client.wallet.rest.model.*;
 import com.github.pagehelper.PageInfo;
-import com.xms.app.entity.resp.WithdrawalConfigResp;
-import com.xms.app.entity.resp.WithdrawalInfo;
-import com.xms.app.entity.resp.WithdrawalSummaryResp;
+import com.xms.app.entity.dto.ReleaseBucketListDto;
+import com.xms.app.entity.resp.*;
 import com.xms.app.entity.vo.WithdrawalVo;
 import com.xms.app.service.BizWithdrawalService;
 import com.xms.common.annotation.RepeatSubmit;
@@ -61,6 +60,16 @@ public class BizWithdrawalController {
 //		return ResultPista.data(
 //			bizWithdrawalService.withdrawalInfo(SecurityUtils.getLoginAppUser().getUserId()));
 //	}
+
+	/**
+	 * h代币释放信息 锁仓中/已释放
+	 * @return
+	 */
+	@GetMapping(value = "/giftReleaseBucket")
+	public ResultPista<GiftReleaseBucketDto> giftReleaseBucket() {
+		return ResultPista.data(bizWithdrawalService.giftReleaseBucket());
+	}
+
 
 	/**
 	 * 提现配置

@@ -2,10 +2,9 @@ package com.xms.app.service;
 
 import com.github.pagehelper.PageInfo;
 import com.xms.app.entity.bo.WithdrawalCallbackBo;
+import com.xms.app.entity.dto.ReleaseBucketListDto;
 import com.xms.app.entity.req.JuNotifyReq;
-import com.xms.app.entity.resp.WithdrawalConfigResp;
-import com.xms.app.entity.resp.WithdrawalInfo;
-import com.xms.app.entity.resp.WithdrawalSummaryResp;
+import com.xms.app.entity.resp.*;
 import com.xms.app.entity.vo.UserBankInfoVo;
 import com.xms.app.entity.vo.UserBankVo;
 import com.xms.app.entity.vo.WithdrawalVo;
@@ -64,4 +63,11 @@ public interface BizWithdrawalService {
 	 * @return
 	 */
 	List<WithdrawalConfigResp> withdrawalConfig();
+
+	/**
+	 * h代币释放信息 锁仓中/已释放
+	 * @return
+	 */
+	GiftReleaseBucketDto giftReleaseBucket();
+
 }

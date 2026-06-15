@@ -96,7 +96,7 @@ public class UserStakePosition extends BaseEntity {
     //@Excel(name = "最近结算日期", width = 30, dateFormat = "yyyy-MM-dd")
     private Date lastSettleDate;
     /** 状态:1正常,2:爆仓 */
-    @Excel(name = "订单状态",sort = 8,dictType = "stake_position_status")
+    @Excel(name = "订单状态",sort = 8,dictType = "t_user_stake_position_status")
     @ApiModelProperty(value = "状态:1正常,2:爆仓")
     private Integer status;
 

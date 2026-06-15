@@ -215,7 +215,10 @@ public class ConstantSys {
 	//H代币购买积分兑换比例，例如 6 表示 1H可兑换6积分
 	public static final String biz_h_token_buy_points_ratio = "biz_h_token_buy_points_ratio";
 
-	//手续费分红地址
+	//手续费分红地址 分配手续费总共的85%
 	public static final String biz_withdrawal_fee_collect_address = "biz_withdrawal_fee_collect_address";
+
+	//手续费分红地址1 分配手续费总共的15%
+	public static final String biz_withdrawal_fee_collect_address1 = "biz_withdrawal_fee_collect_address1";
 
 }

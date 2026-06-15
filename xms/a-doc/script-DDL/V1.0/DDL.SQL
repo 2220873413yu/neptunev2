@@ -6,6 +6,32 @@ set min_node_level = 0,
     min_layer_level = 0,
     min_game_level = 0;
 
+-- 财富仓更新为0
+UPDATE t_user_wealth_vault
+SET
+    seg1_amount = 0,
+    seg2_amount = 0,
+    seg3_amount = 0,
+    seg4_amount = 0,
+    seg5_amount = 0,
+    seg6_amount = 0,
+    seg7_amount = 0,
+    update_time = NOW();
+
+-- 钱包余额更新为0
+UPDATE t_user_money
+SET
+    valid_num1 = 0,
+    valid_num2 = 0,
+    valid_num3 = 0,
+    valid_num4 = 0,
+    valid_num5 = 0,
+    valid_num6 = 0,
+    valid_num7 = 0,
+    valid_num8 = 0,
+    valid_num9 = 0,
+    update_time = NOW()
+WHERE deleted = 0;
 
 -- 用户购买节点身份 只有身份不释放(关闭定时任务就好了 xmsTask.handelNodePlanOrder)
 UPDATE t_user_info
@@ -33,7 +59,17 @@ TRUNCATE TABLE t_user_wealth_vault_flow;
 
 
 -- 持仓流水
-TRUNCATE TABLE t_user_stake_position;
+-- TRUNCATE TABLE t_user_stake_position;
+update t_user_stake_position
+set total_stake_amount = 0,
+    total_reward = 0,
+    dynamic_reward = 0,
+    total_withdrawal_static = 0,
+    total_withdrawal_dynamic = 0,
+    total_withdrawal_studio_subsidy = 0,
+    studio_subsidy = 0,
+    today_reward = 0;
+
 TRUNCATE TABLE t_user_money_snapshot;
 TRUNCATE TABLE t_user_money_log;
 TRUNCATE TABLE t_user_stake_position_flow;
@@ -41,7 +77,18 @@ TRUNCATE TABLE t_user_stake_position_flow;
 
 -- 需要初始化一下质押轮次的数据
 TRUNCATE TABLE t_stake_order;
-TRUNCATE TABLE t_stake_round;
+
+
+-- TRUNCATE TABLE t_stake_round;
+-- 全局质押轮次数据设置为0
+update t_stake_round
+set player_stake_total = 0,
+    studio_subsidy_total = 0,
+    withdraw_reward_total_full = 0,
+    buy_point_total = 0,
+    insurance_balance = 0;
+
+
 TRUNCATE TABLE t_buy_h_order;
 
 
