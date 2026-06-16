@@ -50,4 +50,9 @@ public class UserMoneyBo{
 	 * 今日总动态收益
 	 */
 	private BigDecimal validNum8;
+
+	/**
+	 * H代币
+	 */
+	private BigDecimal validNum9;
 }

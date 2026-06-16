@@ -50,10 +50,10 @@
       <el-form-item label="入金来源" prop="depositSourceType" label-width="120px">
         <el-select v-model="queryParams.depositSourceType" placeholder="请选择入金来源" clearable>
           <el-option
-            v-for="item in depositSourceTypeOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+            v-for="dict in dict.type.stake_order_deposit_source_type"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
           />
         </el-select>
       </el-form-item>
@@ -155,7 +155,7 @@
       <el-table-column label="轮次编号" align="center" prop="stakeRoundId" />
       <el-table-column label="入金来源" align="center" prop="depositSourceType" width="150">
         <template slot-scope="scope">
-          <span>{{ formatDepositSourceType(scope.row.depositSourceType) }}</span>
+          <dict-tag :options="dict.type.stake_order_deposit_source_type" :value="scope.row.depositSourceType"/>
         </template>
       </el-table-column>
       <el-table-column label="ACP入金数量" align="center" prop="stakeAmount" width="130">
@@ -163,7 +163,7 @@
           <span>{{ scope.row.stakeAmount }} ACP</span>
         </template>
       </el-table-column>
-      <el-table-column label="旧系统入金H数量" align="center" prop="oldHAmount" width="150">
+      <el-table-column label="入金H数量" align="center" prop="oldHAmount" width="150">
         <template slot-scope="scope">
           <span>{{ formatOldHAmount(scope.row) }}</span>
         </template>
@@ -259,7 +259,7 @@ import { listStakeOrder, getStakeOrder, delStakeOrder, addStakeOrder, updateStak
 
 export default {
   name: "StakeOrder",
-  dicts: ['t_stake_order_status'],
+  dicts: ['t_stake_order_status', 'stake_order_deposit_source_type'],
   data() {
     return {
       // 遮罩层
@@ -276,11 +276,6 @@ export default {
       total: 0,
       // 质押订单表格数据
       stakeOrderList: [],
-      // 入金来源选项
-      depositSourceTypeOptions: [
-        { value: 1, label: "正常ACP入金" },
-        { value: 3, label: "旧系统H换ACP入金" }
-      ],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -369,12 +364,9 @@ export default {
       };
       this.resetForm("form");
     },
-    formatDepositSourceType(value) {
-      const option = this.depositSourceTypeOptions.find(item => item.value === Number(value));
-      return option ? option.label : value;
-    },
     formatOldHAmount(row) {
-      if (Number(row.depositSourceType) !== 3) {
+      const depositSourceType = Number(row.depositSourceType);
+      if (depositSourceType !== 3 && depositSourceType !== 4) {
         return "-";
       }
       return `${row.oldHAmount || 0} H`;

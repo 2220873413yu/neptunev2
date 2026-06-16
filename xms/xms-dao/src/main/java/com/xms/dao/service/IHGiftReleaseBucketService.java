@@ -51,6 +51,17 @@ public interface IHGiftReleaseBucketService extends XmsDataService<HGiftReleaseB
 	public boolean createOldHToAcpDepositBucket(Long userId, String account, String sourceOrderNo, BigDecimal giftHAmount);
 
 	/**
+	 * 用户H余额换ACP入金后创建H赠送释放桶
+	 *
+	 * @param userId 用户ID
+	 * @param account 用户钱包地址
+	 * @param sourceOrderNo 来源订单号
+	 * @param giftHAmount 本单应赠送H总量
+	 * @return 是否成功
+	 */
+	public boolean createWalletHToAcpDepositBucket(Long userId, String account, String sourceOrderNo, BigDecimal giftHAmount);
+
+	/**
 	 * 冻结释放桶
 	 *
 	 * @param id 主键

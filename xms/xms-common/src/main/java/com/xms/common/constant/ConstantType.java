@@ -58,10 +58,11 @@ public class ConstantType {
 		public static final int type_9 = 9;
 	}
 
-	//质押/入金订单来源 1:正常ACP入金,3:旧系统H换ACP入金
+	//质押/入金订单来源 1:正常ACP入金,3:旧系统H换ACP入金,4:用户H余额换ACP入金
 	public class stake_order_deposit_source_type {
 		public static final int type_1 = 1;
 		public static final int type_3 = 3;
+		public static final int type_4 = 4;
 	}
 
 	/**
@@ -174,6 +175,8 @@ public class ConstantType {
 		public static final int type_32 = 32;
 		/** H赠送释放 */
 		public static final int type_33 = 33;
+		/** H余额换ACP入金扣减 */
+		public static final int type_34 = 34;
 		public static final int type_44 = 44;
 	}
 

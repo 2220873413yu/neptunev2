@@ -86,6 +86,7 @@ public interface RedisConstant {
 	 */
 	String GATE_SPOT_KLINE = REDIS_PREFIX + "gate:spot:kline:";
 	String GATE_SPOT_PRICE = REDIS_PREFIX + "gate:spot:price:";
+	String GATE_MARKET_SPOT_PRICE = REDIS_PREFIX + "gate:market:spot:price:";
 
 	/**
 	 * XMS 代币价格缓存key

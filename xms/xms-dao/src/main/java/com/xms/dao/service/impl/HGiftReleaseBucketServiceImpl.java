@@ -30,6 +30,7 @@ public class HGiftReleaseBucketServiceImpl extends XmsDataServiceImpl<HGiftRelea
 	private static final int SOURCE_TYPE_ACP_DEPOSIT = 1;
 	private static final int SOURCE_TYPE_MANUAL = 2;
 	private static final int SOURCE_TYPE_OLD_H_TO_ACP_DEPOSIT = 3;
+	private static final int SOURCE_TYPE_WALLET_H_TO_ACP_DEPOSIT = 4;
 	private static final int STATUS_RELEASING = 1;
 	private static final int STATUS_FROZEN = 3;
 
@@ -135,6 +136,24 @@ public class HGiftReleaseBucketServiceImpl extends XmsDataServiceImpl<HGiftRelea
 	@Transactional(rollbackFor = Exception.class)
 	public boolean createOldHToAcpDepositBucket(Long userId, String account, String sourceOrderNo, BigDecimal giftHAmount) {
 		return createDepositGiftBucket(userId, account, SOURCE_TYPE_OLD_H_TO_ACP_DEPOSIT, sourceOrderNo, giftHAmount);
+	}
+
+	/**
+	 * 用户H余额换ACP入金后创建 H赠送释放桶。
+	 *
+	 * <p>本方法只创建释放计划，不直接写钱包、不写奖励流水。赠送H数量来自 t_stake_order
+	 * 的订单快照，不在释放桶创建时重新读取价格计算。</p>
+	 *
+	 * @param userId 用户ID
+	 * @param account 用户钱包地址
+	 * @param sourceOrderNo 来源订单号
+	 * @param giftHAmount 本单应赠送H总量
+	 * @return 是否创建成功
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public boolean createWalletHToAcpDepositBucket(Long userId, String account, String sourceOrderNo, BigDecimal giftHAmount) {
+		return createDepositGiftBucket(userId, account, SOURCE_TYPE_WALLET_H_TO_ACP_DEPOSIT, sourceOrderNo, giftHAmount);
 	}
 
 	private boolean createDepositGiftBucket(Long userId, String account, Integer sourceType, String sourceOrderNo,

@@ -3,6 +3,7 @@ package com.xms.app.service;
 import com.xms.app.entity.bo.BuyPointsCallbackBo;
 import com.xms.app.entity.bo.OldHToAcpDepositCallbackBo;
 import com.xms.app.entity.bo.StakeOrderCallbackBo;
+import com.xms.app.entity.req.HBalanceAcpDepositReq;
 import com.xms.common.core.domain.api.ResultPista;
 
 /**
@@ -29,4 +30,11 @@ public interface BizStakeService {
 	 * @return
 	 */
 	ResultPista<String> oldHToAcpDepositCallback(OldHToAcpDepositCallbackBo req);
+
+	/**
+	 * 用户H余额换ACP入金
+	 * @param req 请求参数
+	 * @return 订单号
+	 */
+	ResultPista<String> hBalanceToAcpDeposit(HBalanceAcpDepositReq req);
 }

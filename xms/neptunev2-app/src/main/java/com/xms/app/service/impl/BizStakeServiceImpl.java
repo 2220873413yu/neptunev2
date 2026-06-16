@@ -6,6 +6,7 @@ import cn.hutool.system.SystemUtil;
 import com.xms.app.entity.bo.BuyPointsCallbackBo;
 import com.xms.app.entity.bo.OldHToAcpDepositCallbackBo;
 import com.xms.app.entity.bo.StakeOrderCallbackBo;
+import com.xms.app.entity.req.HBalanceAcpDepositReq;
 import com.xms.app.service.BizStakeService;
 import com.xms.common.config.redis.delayqueue.RedissonDelayOrder;
 import com.xms.common.config.redis.lock.RedisLock;
@@ -16,6 +17,7 @@ import com.xms.common.exception.ServiceException;
 import com.xms.common.mq.dynamic.AsyncDynamicOrderSettlementService;
 import com.xms.common.mq.dynamic.OrderMsgDO;
 import com.xms.common.result.ResponseCode;
+import com.xms.common.utils.SecurityUtils;
 import com.xms.common.utils.SignUtil;
 import com.xms.common.utils.uuid.IDUtils;
 import com.xms.dao.domain.BuyHOrder;
@@ -90,6 +92,148 @@ public class BizStakeServiceImpl implements BizStakeService {
 
 	@Value("${lq.newMd5Key}")
 	private String newMd5Key;
+
+	/**
+	 * 用户H余额换ACP入金
+	 *
+	 * @param req 请求参数
+	 * @return 质押订单号
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	@RedisLock(value = RedisConstant.LockConstant.XMS_STAKE_ORDER_PLAN)
+	public ResultPista<String> hBalanceToAcpDeposit(HBalanceAcpDepositReq req) {
+		Long userId = SecurityUtils.getLoginAppUser().getUserId();
+		BigDecimal hAmount = req.getAmount().setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
+		if (hAmount.compareTo(BigDecimal.ZERO) <= 0) {
+			throw new ServiceException(ResponseCode.CODE_115);
+		}
+
+		UserInfo userInfo = userInfoService.lambdaQuery()
+			.eq(UserInfo::getUserId, userId)
+			.one();
+		if (userInfo == null) {
+			throw new ServiceException(ResponseCode.CODE_1007);
+		}
+
+		AcpHPriceSnapshot priceSnapshot = xmsTokenPriceService.getAcpHPriceSnapshot();
+		BigDecimal hUsdtAmount = hAmount.multiply(priceSnapshot.getHPriceUsdt())
+			.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
+		BigDecimal acpDepositAmount = calculateAcpDepositAmount(hUsdtAmount, priceSnapshot.getAcpPriceUsdt());
+		BigDecimal minStakeAmount = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_min_stake_amount));
+		if (acpDepositAmount.compareTo(minStakeAmount) < 0) {
+			throw new ServiceException(ResponseCode.CODE_1255);
+		}
+
+		//进行中的轮次
+		StakeRound stakeRound = stakeRoundServiceImpl.lambdaQuery()
+			.eq(StakeRound::getStatus, 0)
+			.last("for update")
+			.one();
+		if (stakeRound == null) {
+			throw new ServiceException(ResponseCode.CODE_1260);
+		}
+
+		String orderNo = IDUtils.getSnowflakeStr();
+		int deductCount = userWalletServiceImpl.handerUserMoney(hAmount.negate(), orderNo, userId, userId,
+			ConstantType.user_money_log_source_type.type_34, ConstantType.user_money_coin_type.type_9);
+		if (deductCount != 1) {
+			throw new ServiceException(ResponseCode.CODE_1015);
+		}
+
+		boolean update = userInfoService.lambdaUpdate()
+			.eq(UserInfo::getUserId, userInfo.getUserId())
+			.set(UserInfo::getIsValid, 1)
+			.setSql("performance = performance + " + acpDepositAmount)
+			.setSql("history_performance = history_performance + " + acpDepositAmount)
+			.update();
+		if (!update) {
+			throw new ServiceException(ResponseCode.CODE_1002);
+		}
+
+		Long belongUserId = 0L;
+		boolean flag = true;
+		if (userInfo.getInviteUserId() != null) {
+			update = userInfoService.lambdaUpdate()
+				.eq(UserInfo::getUserId, userInfo.getInviteUserId())
+				.setSql("sub_performance = sub_performance + " + acpDepositAmount)
+				.update();
+			if (!update) {
+				throw new ServiceException(ResponseCode.CODE_1002);
+			}
+			update = userInfoService.lambdaUpdate()
+				.in(UserInfo::getUserId, userInfo.getParentIds())
+				.setSql("umbrella_performance = umbrella_performance + " + acpDepositAmount)
+				.update();
+			if (!update) {
+				throw new ServiceException(ResponseCode.CODE_1002);
+			}
+
+			List<UserInfo> parentUserInfoList = userInfoService.lambdaQuery()
+				.in(UserInfo::getUserId, userInfo.getParentIds())
+				.orderByDesc(UserInfo::getUserId)
+				.list().stream().peek(item -> {
+					item.setGameLevel(Math.max(item.getGameLevel(), item.getMinGameLevel()));
+				})
+				.collect(Collectors.toList());
+
+			for (UserInfo info : parentUserInfoList) {
+				if (flag && info.getGameLevel() >= 1) {
+					belongUserId = info.getUserId();
+					flag = false;
+				}
+			}
+		}
+
+		boolean updateRound = stakeRoundServiceImpl.lambdaUpdate()
+			.eq(StakeRound::getId, stakeRound.getId())
+			.setSql("player_stake_total = player_stake_total + " + acpDepositAmount)
+			.update();
+		if (!updateRound) {
+			log.error("更新轮次质押总量失败");
+			throw new ServiceException(ResponseCode.CODE_1002);
+		}
+
+		BigDecimal giftRatioSnapshot = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_acp_h_gift_ratio))
+			.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
+		StakeOrder stakeOrder = new StakeOrder();
+		stakeOrder.setOrderNo(orderNo);
+		stakeOrder.setStakeAmount(acpDepositAmount);
+		stakeOrder.setOldHAmount(hAmount);
+		stakeOrder.setDepositSourceType(ConstantType.stake_order_deposit_source_type.type_4);
+		fillAcpDepositStakeSnapshot(stakeOrder, priceSnapshot, hUsdtAmount, giftRatioSnapshot);
+		stakeOrder.setUserId(userId);
+		stakeOrder.setStakeRoundId(stakeRound.getId());
+		stakeOrder.setStatus(1);
+		stakeOrder.setCreateDay(Integer.valueOf(DateUtil.format(DateUtil.date(), "yyyyMMdd")));
+		stakeOrder.setBelongUserId(belongUserId);
+		stakeOrder.setBizStatus(0);
+		stakeOrder.setTxHash(orderNo);
+		stakeOrder.setCreateTime(new Date());
+		boolean save = stakeOrderServiceImpl.save(stakeOrder);
+		if (!save) {
+			log.error("保存质押订单失败");
+			throw new ServiceException(ResponseCode.CODE_1002);
+		}
+
+		//不赠送
+//		if (stakeOrder.getGiftHAmount().compareTo(BigDecimal.ZERO) > 0) {
+//			hGiftReleaseBucketService.createWalletHToAcpDepositBucket(userInfo.getUserId(), userInfo.getAccount(),
+//				stakeOrder.getOrderNo(), stakeOrder.getGiftHAmount());
+//		}
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				List<OrderMsgDO> orderMsgDOList = new ArrayList<>();
+				OrderMsgDO orderMsgDO = new OrderMsgDO();
+				orderMsgDO.setId(stakeOrder.getId());
+				orderMsgDO.setBizType(1);
+				orderMsgDOList.add(orderMsgDO);
+				asyncDynamicOrderSettlementServiceImpl.sendMessage(orderMsgDOList);
+			}
+		});
+		return ResultPista.data(orderNo);
+	}
 
 
 	/**

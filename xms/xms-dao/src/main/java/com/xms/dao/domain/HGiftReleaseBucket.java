@@ -49,9 +49,9 @@ public class HGiftReleaseBucket extends BaseEntity {
 	@ApiModelProperty(value = "用户账号/钱包地址快照")
 	private String account;
 
-	/** 来源类型 1正常ACP入金 2后台手动拨 3旧系统入金 */
-	@Excel(name = "来源类型", sort = 4, readConverterExp = "1=正常ACP入金,2=后台手动拨,3=旧系统入金")
-	@ApiModelProperty(value = "来源类型 1正常ACP入金 2后台手动拨 3旧系统入金")
+	/** 来源类型 1正常ACP入金 2后台手动拨 3旧系统入金 4用户H余额换ACP入金 */
+	@Excel(name = "来源类型", sort = 4, readConverterExp = "1=正常ACP入金,2=后台手动拨,3=旧系统入金,4=用户H余额换ACP入金")
+	@ApiModelProperty(value = "来源类型 1正常ACP入金 2后台手动拨 3旧系统入金 4用户H余额换ACP入金")
 	private Integer sourceType;
 
 	/** 来源订单号 */

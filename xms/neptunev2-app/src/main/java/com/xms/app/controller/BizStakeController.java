@@ -12,6 +12,7 @@ import com.xms.app.entity.vo.CreateDestroyOrderVo;
 import com.xms.app.entity.vo.NodePlanVo;
 import com.xms.app.service.BizCardService;
 import com.xms.app.service.BizMiningService;
+import com.xms.app.service.BizStakeService;
 import com.xms.common.annotation.RateLimiter;
 import com.xms.common.annotation.RepeatSubmit;
 import com.xms.common.core.domain.api.ResultPista;
@@ -48,7 +49,23 @@ public class BizStakeController {
 	private BizCardService bizCardService;
 
 	@Autowired
+	private BizStakeService bizStakeService;
+
+	@Autowired
 	private XmsCommonService xmsCommonServiceImpl;
+
+	/**
+	 * H余额换ACP入金
+	 *
+	 * @param req 请求参数
+	 * @return 质押订单号
+	 */
+	@ApiOperation(value = "H余额换ACP入金")
+	@PostMapping(value = "/hBalanceAcpDeposit")
+	@RepeatSubmit
+	public ResultPista<String> hBalanceAcpDeposit(@Valid @RequestBody HBalanceAcpDepositReq req) {
+		return bizStakeService.hBalanceToAcpDeposit(req);
+	}
 
 	/**
 	 * 我的质押信息

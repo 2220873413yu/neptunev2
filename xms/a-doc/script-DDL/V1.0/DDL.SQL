@@ -6,6 +6,13 @@ set min_node_level = 0,
     min_layer_level = 0,
     min_game_level = 0;
 
+
+-- update t_user_info
+-- set old_performance = 0,
+--     old_history_performance = 0,
+--     old_sub_performance = 0,
+--     old_umbrella_performance = 0;
+
 -- 财富仓更新为0
 UPDATE t_user_wealth_vault
 SET

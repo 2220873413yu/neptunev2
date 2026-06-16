@@ -53,9 +53,9 @@ public class StakeOrder extends BaseEntity {
 	@Excel(name = "旧系统入金H数量", sort = 5)
 	@ApiModelProperty(value = "旧系统入金H数量")
 	private BigDecimal oldHAmount;
-	/** 入金来源类型：1正常ACP入金，3旧系统H换ACP入金 */
-	@Excel(name = "入金来源", sort = 6, readConverterExp = "1=正常ACP入金,3=旧系统H换ACP入金")
-	@ApiModelProperty(value = "入金来源类型：1正常ACP入金，3旧系统H换ACP入金")
+	/** 入金来源类型：1正常ACP入金，3旧系统H换ACP入金，4用户H余额换ACP入金 */
+	@Excel(name = "入金来源", sort = 6, readConverterExp = "1=正常ACP入金,3=旧系统H换ACP入金,4=用户H余额换ACP入金")
+	@ApiModelProperty(value = "入金来源类型：1正常ACP入金，3旧系统H换ACP入金，4用户H余额换ACP入金")
 	private Integer depositSourceType;
 	/** ACP当时U价快照 */
 	@Excel(name = "ACP单价U", sort = 7)

@@ -191,7 +191,8 @@ export default {
       sourceTypeOptions: [
         { value: 1, label: '正常ACP入金' },
         { value: 2, label: '后台手动拨' },
-        { value: 3, label: '旧系统入金' }
+        { value: 3, label: '旧系统入金' },
+        { value: 4, label: '用户H余额换ACP入金' }
       ],
       statusOptions: [
         { value: 1, label: '释放中' },

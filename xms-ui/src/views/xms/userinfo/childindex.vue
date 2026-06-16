@@ -245,6 +245,16 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="赠送业绩(质押量)" align="center" width="150">
+        <template slot-scope="scope">
+          <div class="exchange-info" style="text-align: left;">
+            我的业绩: {{ scope.row.oldPerformance }} <br>
+            团队业绩: {{ scope.row.oldUmbrellaPerformance }} <br>
+            当前轮业绩: {{ scope.row.oldHistoryPerformance }} <br>
+          </div>
+        </template>
+      </el-table-column>
+
       <!--      <el-table-column label="等级" align="center">
             <template slot-scope="scope">
               <dict-tag :options="dict.type.t_user_info_game_level" :value="scope.row.gameLevel"/>

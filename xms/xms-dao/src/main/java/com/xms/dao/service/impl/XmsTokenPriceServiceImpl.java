@@ -116,8 +116,10 @@ public class XmsTokenPriceServiceImpl implements XmsTokenPriceService {
 			}
 			return price;
 		} catch (ServiceException ex) {
+			ex.printStackTrace();
 			throw ex;
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			log.error("Gate代币价格数值非法, value:{}", value, ex);
 			throw new ServiceException(ResponseCode.CODE_113);
 		}

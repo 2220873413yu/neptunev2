@@ -283,6 +283,7 @@ public class BizUserMoneyServiceImpl implements BizUserMoneyService {
 		userMoneyBo.setValidNum6(userMoney.getValidNum6());
 		userMoneyBo.setValidNum7(userMoney.getValidNum7());
 		userMoneyBo.setValidNum8(userMoney.getValidNum8());
+		userMoneyBo.setValidNum9(userMoney.getValidNum9());
 		return userMoneyBo;
 	}
 

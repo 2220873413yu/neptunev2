@@ -76,7 +76,7 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 	public ResultPista<PriceResponse> gateAcpSpotPrice() {
 		try {
 			PriceResponse data = xmsRedis.get(
-				RedisConstant.GATE_SPOT_PRICE + GATE_ACP_USDT,
+				RedisConstant.GATE_MARKET_SPOT_PRICE + GATE_ACP_USDT,
 				() -> fetchGateAcpPriceData(),
 				8L,
 				TimeUnit.SECONDS
