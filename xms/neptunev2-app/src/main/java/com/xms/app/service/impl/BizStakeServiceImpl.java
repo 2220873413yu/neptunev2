@@ -120,7 +120,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 		BigDecimal hUsdtAmount = hAmount.multiply(priceSnapshot.getHPriceUsdt())
 			.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
 		BigDecimal acpDepositAmount = calculateAcpDepositAmount(hUsdtAmount, priceSnapshot.getAcpPriceUsdt());
-		BigDecimal minStakeAmount = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_min_stake_amount));
+		BigDecimal minStakeAmount = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_acp_deposit_min_amount));
 		if (acpDepositAmount.compareTo(minStakeAmount) < 0) {
 			throw new ServiceException(ResponseCode.CODE_1255);
 		}
