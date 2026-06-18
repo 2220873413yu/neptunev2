@@ -4,10 +4,12 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xms.common.config.redis.XmsRedis;
+import com.xms.common.constant.ConstantType;
 import com.xms.common.constant.ConstantStatic;
 import com.xms.common.constant.RedisConstant;
 import com.xms.common.constant.SysConstant;
 import com.xms.dao.domain.*;
+import com.xms.dao.entity.dto.StakeDepositSourceAmountDto;
 import com.xms.dao.entity.bo.UserMoneySumDTO;
 import com.xms.dao.entity.domain.Withdrawal;
 import com.xms.dao.entity.vo.IndexDataPanelVo;
@@ -20,7 +22,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -98,6 +102,26 @@ public class IndexDataServiceImpl implements IndexDataService {
 				.subtract(stakeRound1.getWithdrawRewardTotalFull());
 		}
 		indexDataPanelVo.setV7(v7);
+
+		Map<Integer, BigDecimal> depositSourceAmountMap = new HashMap<>();
+		depositSourceAmountMap.put(ConstantType.stake_order_deposit_source_type.type_1, BigDecimal.ZERO);
+		depositSourceAmountMap.put(ConstantType.stake_order_deposit_source_type.type_3, BigDecimal.ZERO);
+		depositSourceAmountMap.put(ConstantType.stake_order_deposit_source_type.type_4, BigDecimal.ZERO);
+		List<StakeDepositSourceAmountDto> depositSourceAmountList = stakeOrderService.selectDepositSourceAmountStats();
+		if (CollectionUtil.isNotEmpty(depositSourceAmountList)) {
+			for (StakeDepositSourceAmountDto item : depositSourceAmountList) {
+				if (item.getDepositSourceType() == null) {
+					continue;
+				}
+				depositSourceAmountMap.put(
+					item.getDepositSourceType(),
+					item.getTotalStakeAmount() == null ? BigDecimal.ZERO : item.getTotalStakeAmount()
+				);
+			}
+		}
+		indexDataPanelVo.setV51(depositSourceAmountMap.get(ConstantType.stake_order_deposit_source_type.type_1));
+		indexDataPanelVo.setV52(depositSourceAmountMap.get(ConstantType.stake_order_deposit_source_type.type_3));
+		indexDataPanelVo.setV53(depositSourceAmountMap.get(ConstantType.stake_order_deposit_source_type.type_4));
 
 		//v6=节点收益,v8=静态,v9=动态,v10=财富,v11=魔盒,v12=工作室收益,v13=贡献分
 		UserMoneySumDTO userMoneySumDTO = userInfoMapper.queryUserMoneySum();

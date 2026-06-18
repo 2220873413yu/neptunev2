@@ -173,7 +173,7 @@ public class WithdrawalServiceImpl extends ServiceImpl<WithdrawalMapper, Withdra
 	 */
 	public BigDecimal getWithdrawalCaBalance() {
 		// 改为 GET，并固定查询参数 tokenName=h
-		String url = baseUrl + "/api/v1/balance?tokenName=h";
+		String url = baseUrl + "/api/v1/balance?tokenName=acp";
 		HttpRequest request = HttpUtil.createGet(url)
 			.timeout(5000); // 设置超时时间（毫秒）
 		// 发送请求并获取响应

@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class BybitMarketServiceImpl implements BybitMarketService {
 	private static final String GATE_ACP_USDT = "ACP_USDT";
+	private static final String GATE_H_USDT = "H_USDT";
 
 	@Autowired
 	private XmsRedis xmsRedis;
@@ -33,37 +33,40 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 	public ResultPista<PriceResponse> bybitSpotPrice() {
 		try {
 			PriceResponse data = xmsRedis.get(
-				RedisConstant.BYBIT_SPOT_PRICE + "HUSDT",
+				RedisConstant.GATE_MARKET_SPOT_PRICE + GATE_H_USDT,
 				() -> fetchPriceData(),
 				8L,
 				TimeUnit.SECONDS
 			);
 			if (data == null) {
-				return ResultPista.fail("Bybit 最新价获取失败");
+				return ResultPista.fail("Gate H 最新价获取失败");
 			}
 			return ResultPista.data(data);
 		} catch (IORuntimeException ex) {
-			return ResultPista.fail("Bybit 请求失败: " + ex.getMessage());
+			return ResultPista.fail("Gate 请求失败: " + ex.getMessage());
 		} catch (JSONException ex) {
-			return ResultPista.fail("Bybit 解析失败: " + ex.getMessage());
+			return ResultPista.fail("Gate 解析失败: " + ex.getMessage());
 		}
 	}
 
 	private PriceResponse fetchPriceData() {
-		String normalizedSymbol = "HUSDT";
-		String tickerUrl = "https://api.bybit.com/v5/market/tickers?category=spot&symbol=" + normalizedSymbol;
+		String tickerUrl = "https://api.gateio.ws/api/v4/spot/tickers?currency_pair=" + GATE_H_USDT;
 
 		String tickerBody = HttpRequest.get(tickerUrl).timeout(5000).execute().body();
-		JSONObject tickerJson = JSONUtil.parseObj(tickerBody);
+		JSONArray tickerArray = JSONUtil.parseArray(tickerBody);
+		if (tickerArray.isEmpty()) {
+			return null;
+		}
 
-		Integer tickerCode = tickerJson.getInt("retCode");
-		if (tickerCode != null && tickerCode != 0) {
+		JSONObject ticker = tickerArray.getJSONObject(0);
+		String lastPrice = ticker.getStr("last");
+		if (lastPrice == null) {
 			return null;
 		}
 
 		PriceResponse data = new PriceResponse();
-		data.setSn("hu");
-		data.setLp(String.valueOf(tickerJson.getByPath("result.list.0.lastPrice")));
+		data.setSn(GATE_H_USDT);
+		data.setLp(lastPrice);
 		return data;
 	}
 
@@ -114,7 +117,7 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 	}
 
 	public static class KlineResponse {
-		/** 原字段 symbol，交易对标识，例如 HUSDT */
+		/** 原字段 symbol，交易对标识，例如 H_USDT */
 		private String sn;
 		/** 原字段 interval，K 线周期 */
 		private String iv;
@@ -167,7 +170,7 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 	}
 
 	public static class PriceResponse {
-		/** 原字段 symbol，交易对标识，例如 HUSDT */
+		/** 原字段 symbol，交易对标识，例如 H_USDT */
 		private String sn;
 		/** 原字段 latestPrice，最新价格 */
 		private String lp;
@@ -193,56 +196,62 @@ public class BybitMarketServiceImpl implements BybitMarketService {
 	public ResultPista<KlineResponse> bybitSpotKline() {
 		try {
 			KlineResponse data = xmsRedis.get(
-				RedisConstant.BYBIT_SPOT_KLINE + "HUSDT:D:7d",
+				RedisConstant.GATE_SPOT_KLINE + GATE_H_USDT + ":1d:7d",
 				() -> fetchKlineData(),
 				60L,
 				TimeUnit.SECONDS
 			);
 			if (data == null) {
-				return ResultPista.fail("Bybit K线获取失败");
+				return ResultPista.fail("Gate H K线获取失败");
 			}
 			return ResultPista.data(data);
 		} catch (IORuntimeException ex) {
-			return ResultPista.fail("Bybit 请求失败: " + ex.getMessage());
+			return ResultPista.fail("Gate 请求失败: " + ex.getMessage());
 		} catch (JSONException ex) {
-			return ResultPista.fail("Bybit 解析失败: " + ex.getMessage());
+			return ResultPista.fail("Gate 解析失败: " + ex.getMessage());
 		}
 	}
 
-	private KlineResponse fetchKlineData() {
-		String normalizedSymbol = "HUSDT";
-		String interval = "D";
-		int safeDays = 7;
-		long end = System.currentTimeMillis();
-		long start = end - safeDays * 24L * 60L * 60L * 1000L;
 
-		String klineUrl = "https://api.bybit.com/v5/market/kline?category=spot&symbol="
-			+ normalizedSymbol + "&interval=" + interval + "&start=" + start + "&end=" + end;
+	private KlineResponse fetchKlineData() {
+		String normalizedSymbol = "H_USDT";
+		int safeDays = 7;
+		long endSeconds = System.currentTimeMillis() / 1000;
+		long startSeconds = endSeconds - safeDays * 24L * 60L * 60L;
+		long startMillis = startSeconds * 1000;
+		long endMillis = endSeconds * 1000;
+
+		String klineUrl = "https://api.gateio.ws/api/v4/spot/candlesticks?currency_pair="
+			+ normalizedSymbol + "&interval=1d&from=" + startSeconds + "&to=" + endSeconds;
 
 		String klineBody = HttpRequest.get(klineUrl).timeout(5000).execute().body();
-		JSONObject klineJson = JSONUtil.parseObj(klineBody);
-
-		Integer klineCode = klineJson.getInt("retCode");
-		if (klineCode != null && klineCode != 0) {
+		JSONArray rawKline = JSONUtil.parseArray(klineBody);
+		if (rawKline.isEmpty()) {
 			return null;
 		}
 
 		KlineResponse data = new KlineResponse();
 		data.setSn(normalizedSymbol);
-		data.setIv(interval);
-		data.setSt(start);
-		data.setEt(end);
+		data.setIv("D");
+		data.setSt(startMillis);
+		data.setEt(endMillis);
 
-		JSONArray rawKline = JSONUtil.parseArray(klineJson.getByPath("result.list"));
 		List<Object> filtered = new ArrayList<>();
 		for (Object item : rawKline) {
 			JSONArray row = JSONUtil.parseArray(item);
-			long ts = Long.parseLong(row.getStr(0));
-			if (ts >= start && ts <= end) {
-				filtered.add(row);
+			long tsMillis = Long.parseLong(row.getStr(0)) * 1000;
+			if (tsMillis >= startMillis && tsMillis <= endMillis) {
+				JSONArray normalizedRow = new JSONArray();
+				normalizedRow.add(tsMillis);
+				normalizedRow.add(row.getStr(5));
+				normalizedRow.add(row.getStr(3));
+				normalizedRow.add(row.getStr(4));
+				normalizedRow.add(row.getStr(2));
+				normalizedRow.add(row.getStr(1));
+				normalizedRow.add(row.getStr(6));
+				filtered.add(normalizedRow);
 			}
 		}
-		Collections.reverse(filtered); // Bybit默认倒序，反转后按时间升序
 
 		data.setKl(filtered);
 		return data;

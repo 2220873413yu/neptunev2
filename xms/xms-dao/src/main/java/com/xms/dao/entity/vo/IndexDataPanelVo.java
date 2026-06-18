@@ -265,4 +265,19 @@ public class IndexDataPanelVo {
 	 * 全网入金
 	 */
 	private BigDecimal v50 = BigDecimal.ZERO;
+
+	/**
+	 * 正常ACP入金总额
+	 */
+	private BigDecimal v51 = BigDecimal.ZERO;
+
+	/**
+	 * 旧系统H换ACP入金总额
+	 */
+	private BigDecimal v52 = BigDecimal.ZERO;
+
+	/**
+	 * 用户H余额换ACP入金总额
+	 */
+	private BigDecimal v53 = BigDecimal.ZERO;
 }

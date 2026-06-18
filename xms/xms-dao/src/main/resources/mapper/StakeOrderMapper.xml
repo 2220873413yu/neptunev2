@@ -28,6 +28,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createDay"    column="create_day"    />
     </resultMap>
 
+    <resultMap type="com.xms.dao.entity.dto.StakeDepositSourceAmountDto" id="StakeDepositSourceAmountResult">
+        <result property="depositSourceType" column="deposit_source_type" />
+        <result property="totalStakeAmount" column="total_stake_amount" />
+    </resultMap>
+
     <sql id="selectStakeOrderVo">
         select belong_user_id, create_day, biz_status, id, order_no, user_id, stake_round_id, stake_amount, old_h_amount,
                deposit_source_type, acp_price_usdt_snapshot, h_price_usdt_snapshot, deposit_usdt_amount,
@@ -53,6 +58,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''"> and create_time between #{params.beginCreateTime} and #{params.endCreateTime}</if>
         </where>
         order by id desc
+    </select>
+
+    <select id="selectDepositSourceAmountStats" resultMap="StakeDepositSourceAmountResult">
+        select deposit_source_type,
+               IFNULL(SUM(stake_amount), 0) as total_stake_amount
+        from t_stake_order
+        where status = 1
+          and deposit_source_type in (1, 3, 4)
+        group by deposit_source_type
     </select>
 
 </mapper>

@@ -58,14 +58,16 @@
                 <i class="el-icon-coin"></i>
               </div>
               <div class="overview-data">
-                <div class="overview-label">累计消耗MAI</div>
+                <div class="overview-label">全网入金</div>
                 <div class="overview-value">
-                  <count-to :startVal='0' :endVal='truncate4(fromData.v9)' :decimals="6" :duration='2000' />
+                  <count-to :startVal='0' :endVal='truncate4(fromData.v50)' :decimals="6" :duration='2000' />
                 </div>
               </div>
             </div>
           </el-card>
         </el-col>-->
+
+<!--        -->
 
 <!--        <el-col :xs="12" :sm="6" :md="6" :lg="6">
           <el-card class="overview-card" shadow="hover">
@@ -100,10 +102,12 @@
         </el-col>-->
       </el-row>
 
+
+
       <!-- 主要数据卡片 -->
       <el-row :gutter="20" align="stretch" type="flex">
 
-        <el-col :xs="24" :sm="12" :lg="8" class="mb-10">
+        <el-col :xs="24" :sm="12" :lg="6" class="mb-10">
           <el-card class="dashboard-card invest-card" shadow="hover">
             <template #header>
               <div class="card-header">
@@ -182,7 +186,7 @@
         </el-col>
 
         <!-- 用户数据卡片 -->
-        <el-col :xs="24" :sm="12" :lg="8" class="mb-10">
+        <el-col :xs="24" :sm="12" :lg="6" class="mb-10">
           <el-card class="dashboard-card user-card" shadow="hover">
             <template #header>
               <div class="card-header">
@@ -330,7 +334,7 @@
           </el-card>
         </el-col>-->
 
-        <el-col :xs="24" :sm="12" :lg="8" class="mb-10">
+        <el-col :xs="24" :sm="12" :lg="6" class="mb-10">
           <el-card class="dashboard-card profit-card" shadow="hover">
             <template #header>
               <div class="card-header">
@@ -384,6 +388,48 @@
                     <count-to :startVal='0'
                               :decimals="getDecimalLen(fromData.v43)"
                               :endVal='toNumber(fromData.v43)'
+                              :duration='2000' />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+
+        <el-col :xs="24" :sm="12" :lg="6" class="mb-10">
+          <el-card class="dashboard-card deposit-card" shadow="hover">
+            <template #header>
+              <div class="card-header">
+                <i class="el-icon-coin"></i>
+                <span>入金统计</span>
+              </div>
+            </template>
+            <div class="card-content">
+              <div class="data-list">
+                <div class="data-item">
+                  <div class="data-label">正常ACP入金</div>
+                  <div class="data-value">
+                    <count-to :startVal='0'
+                              :decimals="getDecimalLen(fromData.v51)"
+                              :endVal='toNumber(fromData.v51)'
+                              :duration='2000' />
+                  </div>
+                </div>
+                <div class="data-item">
+                  <div class="data-label">旧系统入金</div>
+                  <div class="data-value">
+                    <count-to :startVal='0'
+                              :decimals="getDecimalLen(fromData.v52)"
+                              :endVal='toNumber(fromData.v52)'
+                              :duration='2000' />
+                  </div>
+                </div>
+                <div class="data-item">
+                  <div class="data-label">H余额换ACP</div>
+                  <div class="data-value">
+                    <count-to :startVal='0'
+                              :decimals="getDecimalLen(fromData.v53)"
+                              :endVal='toNumber(fromData.v53)'
                               :duration='2000' />
                   </div>
                 </div>
@@ -682,7 +728,11 @@ export default {
         v29: 0,
         v30: 0,
         v32: 0,
-        v33: 0
+        v33: 0,
+        v50: 0,
+        v51: 0,
+        v52: 0,
+        v53: 0
       }
     }
   },
@@ -917,6 +967,13 @@ export default {
   border-top: 3px solid #F56C6C;
   .card-header {
     color: #F56C6C;
+  }
+}
+
+.deposit-card {
+  border-top: 3px solid #67C23A;
+  .card-header {
+    color: #67C23A;
   }
 }
 

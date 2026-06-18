@@ -40,18 +40,7 @@ SET
     update_time = NOW()
 WHERE deleted = 0;
 
--- 用户购买节点身份 只有身份不释放(关闭定时任务就好了 xmsTask.handelNodePlanOrder)
-UPDATE t_user_info
-SET
-    old_performance = IFNULL(performance, 0),
-    old_history_performance = IFNULL(history_performance, 0),
-    old_sub_performance = IFNULL(sub_performance, 0),
-    old_umbrella_performance = IFNULL(umbrella_performance, 0),
-    performance = 0,
-    history_performance = 0,
-    sub_performance = 0,
-    umbrella_performance = 0,
-    update_time = NOW();
+
 
 
 
@@ -209,3 +198,19 @@ ALTER TABLE `neptunev2`.`t_user_money` MODIFY COLUMN `valid_num6` decimal(30, 8)
 ALTER TABLE `neptunev2`.`t_user_money` MODIFY COLUMN `valid_num9` decimal(30, 8) NULL DEFAULT 0.00000000 COMMENT 'H代币' AFTER `valid_num8`;
 
 SET FOREIGN_KEY_CHECKS=1;
+
+
+    -- 用户购买节点身份 只有身份不释放(关闭定时任务就好了 xmsTask.handelNodePlanOrder)
+UPDATE t_user_info
+SET
+    old_performance = IFNULL(performance, 0),
+    old_history_performance = IFNULL(history_performance, 0),
+    old_sub_performance = IFNULL(sub_performance, 0),
+    old_umbrella_performance = IFNULL(umbrella_performance, 0),
+    performance = 0,
+    history_performance = 0,
+    sub_performance = 0,
+    umbrella_performance = 0,
+    update_time = NOW();
+
+ALTER TABLE `neptunev2`.`t_stake_order` ADD COLUMN `old_h_amount` decimal(32, 6) NOT NULL DEFAULT 0.000000 COMMENT '旧系统入金H数量' AFTER `stake_amount`;

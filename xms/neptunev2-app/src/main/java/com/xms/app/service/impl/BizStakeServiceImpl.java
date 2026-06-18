@@ -391,13 +391,15 @@ public class BizStakeServiceImpl implements BizStakeService {
 			log.error("保存质押订单失败");
 			throw new ServiceException(ResponseCode.CODE_1002);
 		}
+
+		//旧系统入金不会增对应的30%h代币
 		saveOldHToAcpDepositRecord(req, userInfo, oldHAmount, oldHUsdtAmount, acpDepositAmount, priceSnapshot, stakeOrder);
 
 		if (status == 1) {
-			if (stakeOrder.getGiftHAmount().compareTo(BigDecimal.ZERO) > 0) {
-				hGiftReleaseBucketService.createOldHToAcpDepositBucket(userInfo.getUserId(), userInfo.getAccount(),
-					stakeOrder.getOrderNo(), stakeOrder.getGiftHAmount());
-			}
+//			if (stakeOrder.getGiftHAmount().compareTo(BigDecimal.ZERO) > 0) {
+//				hGiftReleaseBucketService.createOldHToAcpDepositBucket(userInfo.getUserId(), userInfo.getAccount(),
+//					stakeOrder.getOrderNo(), stakeOrder.getGiftHAmount());
+//			}
 			//需要处理质押之后的任务
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 				@Override

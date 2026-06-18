@@ -23,11 +23,11 @@ public class BybitMarketController {
 	private BybitMarketService bybitMarketService;
 
 	/**
-	 * Bybit 现货K线（默认取最近7天日线）
+	 * Gate H 现货K线（默认取最近7天日线，兼容旧路径）
 	 * 返回数据结构说明：
 	 * kline -> [timestamp, open, high, low, close, volume, turnover]
 	 */
-	@ApiOperation(value = "Bybit现货K线")
+	@ApiOperation(value = "Gate H现货K线")
 	@GetMapping(value = "/api/bybit/spot/kie")
 	@Anonymous
 	public ResultPista<BybitMarketServiceImpl.KlineResponse> bybitSpotKline() {
@@ -35,9 +35,9 @@ public class BybitMarketController {
 	}
 
 	/**
-	 * Bybit 现货最新价
+	 * Gate H 现货最新价（兼容旧路径）
 	 */
-	@ApiOperation(value = "Bybit现货最新价")
+	@ApiOperation(value = "Gate H现货最新价")
 	@GetMapping(value = "/api/bybit/spot/pe")
 	@Anonymous
 	public ResultPista<BybitMarketServiceImpl.PriceResponse> bybitSpotPrice() {
@@ -45,11 +45,11 @@ public class BybitMarketController {
 	}
 
 	/**
-	 * Bybit H 现货K线（默认取最近7天日线）
+	 * Gate H 现货K线（默认取最近7天日线）
 	 * 返回数据结构说明：
 	 * kline -> [timestamp, open, high, low, close, volume, turnover]
 	 */
-	@ApiOperation(value = "Bybit H现货K线")
+	@ApiOperation(value = "Gate H现货K线")
 	@GetMapping(value = "/api/bybit/spot/h/kie")
 	@Anonymous
 	public ResultPista<BybitMarketServiceImpl.KlineResponse> bybitHSpotKline() {
@@ -57,9 +57,9 @@ public class BybitMarketController {
 	}
 
 	/**
-	 * Bybit H 现货最新价
+	 * Gate H 现货最新价
 	 */
-	@ApiOperation(value = "Bybit H现货最新价")
+	@ApiOperation(value = "Gate H现货最新价")
 	@GetMapping(value = "/api/bybit/spot/h/pe")
 	@Anonymous
 	public ResultPista<BybitMarketServiceImpl.PriceResponse> bybitHSpotPrice() {
