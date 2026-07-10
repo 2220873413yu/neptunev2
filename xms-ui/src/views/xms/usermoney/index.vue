@@ -90,8 +90,8 @@
         <el-table-column label="魔盒" align="center" prop="validNum5" sortable="custom" :sort-orders="['descending', 'ascending']" />
         <el-table-column label="工作室收益" align="center" prop="validNum6" sortable="custom" :sort-orders="['descending', 'ascending']" />
         <el-table-column label="贡献分" align="center" prop="validNum7" sortable="custom" :sort-orders="['descending', 'ascending']" />
-        <el-table-column label="今日总动态收益" align="center" prop="validNum8" sortable="custom" :sort-orders="['descending', 'ascending']" />
-        <el-table-column label="H" align="center" prop="validNum9" />
+<!--        <el-table-column label="今日总动态收益" align="center" prop="validNum8" sortable="custom" :sort-orders="['descending', 'ascending']" />-->
+        <el-table-column label="H代币" align="center" prop="validNum9" />
 <!--
         <el-table-column label="资产5余额数" align="center" prop="validNum5" />
         <el-table-column label="资产6余额数" align="center" prop="validNum6" />

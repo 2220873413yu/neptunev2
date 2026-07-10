@@ -93,7 +93,7 @@ public interface IAsyncTaskService {
 	void handelHGiftRelease106();
 
 	/**
-	 * 补偿任务 重新计算用户等级
+	 * 根据历史成功质押订单重新计算真实/映射个人及团队业绩
 	 */
-	void handelHGiftRelease();
+	void handelHGiftRelease01();
 }

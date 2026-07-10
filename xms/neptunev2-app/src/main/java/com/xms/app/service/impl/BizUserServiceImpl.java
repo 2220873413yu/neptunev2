@@ -1156,6 +1156,14 @@ public class BizUserServiceImpl implements BizUserService {
 			.multiply(new BigDecimal("100"));
 	}
 
+	/**
+	 * 校验钱包签名并登录；新用户注册时，邀请人必须已有当前体系质押仓位。
+	 *
+	 * <p>旧系统迁移业绩资格已停用，不再作为无质押仓位邀请人的兜底条件。</p>
+	 *
+	 * @param loginVo 钱包登录及邀请信息
+	 * @return 登录用户和令牌信息
+	 */
 	@Override
 	@RedisLock(value = RedisConstant.LockConstant.USER_LOGIN, param = "#loginVo.address")
 	@Transactional(rollbackFor = Exception.class)
@@ -1174,15 +1182,11 @@ public class BizUserServiceImpl implements BizUserService {
 				if (inviteUser == null) {
 					throw new ServiceException(ResponseCode.CODE_1010);
 				}
-				//todo 旧系统有业绩也能邀请人
 				Long count = userStakePositionService.lambdaQuery()
 					.eq(UserStakePosition::getUserId, inviteUser.getUserId())
 					.count();
-				if(count<=0){
-					//判断有没有旧数据入金
-					if(inviteUser.getOldPerformance().compareTo(BigDecimal.ZERO)<=0){
-						throw new ServiceException(ResponseCode.CODE_1256);
-					}
+				if (count <= 0) {
+					throw new ServiceException(ResponseCode.CODE_1256);
 				}
 			}
 			if (inviteUser == null) {

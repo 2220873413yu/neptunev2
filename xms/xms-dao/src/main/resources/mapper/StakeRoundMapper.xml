@@ -8,6 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="id"    column="id"    />
         <result property="status"    column="status"    />
         <result property="bizStatus"    column="biz_status"    />
+        <result property="liquidationCheckEnabled"    column="liquidation_check_enabled"    />
         <result property="startTime"    column="start_time"    />
         <result property="liquidationTime"    column="liquidation_time"    />
         <result property="endTime"    column="end_time"    />
@@ -22,7 +23,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStakeRoundVo">
-        select buy_point_total, biz_status, insurance_balance, id, status, start_time, liquidation_time, end_time, player_stake_total, studio_subsidy_total, withdraw_reward_total_full, remark, create_time, update_time from t_stake_round
+        select buy_point_total, biz_status, liquidation_check_enabled, insurance_balance, id, status, start_time, liquidation_time, end_time, player_stake_total, studio_subsidy_total, withdraw_reward_total_full, remark, create_time, update_time from t_stake_round
     </sql>
 
     <select id="selectStakeRoundList" parameterType="StakeRound"
@@ -32,6 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="id != null "> and id = #{id}</if>
             <if test="status != null "> and status = #{status}</if>
             <if test="bizStatus != null "> and biz_status = #{bizStatus}</if>
+            <if test="liquidationCheckEnabled != null "> and liquidation_check_enabled = #{liquidationCheckEnabled}</if>
             <if test="startTime != null "> and start_time = #{startTime}</if>
             <if test="liquidationTime != null "> and liquidation_time = #{liquidationTime}</if>
             <if test="endTime != null "> and end_time = #{endTime}</if>

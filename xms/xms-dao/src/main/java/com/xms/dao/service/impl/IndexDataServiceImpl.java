@@ -68,6 +68,9 @@ public class IndexDataServiceImpl implements IndexDataService {
 
 	@Autowired
 	private  IUserWealthVaultService userWealthVaultService;
+
+	@Autowired
+	private IHGiftReleaseBucketService hGiftReleaseBucketService;
 	/**
 	 * 计算跌幅百分比
 	 *
@@ -85,6 +88,11 @@ public class IndexDataServiceImpl implements IndexDataService {
 		return declinePercentage;
 	}
 
+	/**
+	 * 组装首页统计看板数据，包含全网余额、入金来源、今日业绩以及H赠送释放桶汇总。
+	 *
+	 * @return 首页看板统计数据，金额和代币数量均为聚合后的 BigDecimal
+	 */
 	@Override
 	public IndexDataPanelVo getIndexDataPanelVo() {
 		IndexDataPanelVo indexDataPanelVo = new IndexDataPanelVo();
@@ -96,6 +104,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 			.one();
 		BigDecimal v7 = BigDecimal.ZERO;
 		if(stakeRound1!=null){
+			//
 			v7 =stakeRound1.getPlayerStakeTotal()
 				.add(stakeRound1.getBuyPointTotal())
 				.subtract(stakeRound1.getStudioSubsidyTotal())
@@ -132,6 +141,7 @@ public class IndexDataServiceImpl implements IndexDataService {
 		indexDataPanelVo.setV11(userMoneySumDTO.getTotalValidNum5());
 		indexDataPanelVo.setV12(userMoneySumDTO.getTotalValidNum6());
 		indexDataPanelVo.setV13(userMoneySumDTO.getTotalValidNum7());
+		indexDataPanelVo.setV14(userMoneySumDTO.getTotalValidNum9());
 
 		CompletableFuture<Void> future2 = CompletableFuture.runAsync(() -> {
 			BigDecimal v35 = BigDecimal.ZERO;
@@ -182,6 +192,21 @@ public class IndexDataServiceImpl implements IndexDataService {
 				.filter(item -> item.getStakeAmount() != null)
 				.map(StakeOrder::getStakeAmount)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			//今日新增业绩 1:正常ACP入金,3:旧系统H换ACP入金,4:用户H余额换ACP入金
+			BigDecimal todayNormalAcpStakeAmount = sumTodayStakeAmountByDepositSourceType(
+				stakeOrderList,
+				ConstantType.stake_order_deposit_source_type.type_1
+			);
+			BigDecimal todayOldHToAcpStakeAmount = sumTodayStakeAmountByDepositSourceType(
+				stakeOrderList,
+				ConstantType.stake_order_deposit_source_type.type_3
+			);
+			BigDecimal todayHBalanceToAcpStakeAmount = sumTodayStakeAmountByDepositSourceType(
+				stakeOrderList,
+				ConstantType.stake_order_deposit_source_type.type_4
+			);
+
 			//今日工作室补贴
 			BigDecimal todayAmount6 = rewardRecordService.lambdaQuery()
 				.eq(RewardRecord::getSourceType,6)
@@ -193,6 +218,9 @@ public class IndexDataServiceImpl implements IndexDataService {
 
 			indexDataPanelVo.setV29(todayAddStakeAmount);
 			indexDataPanelVo.setV30(todayAmount6);
+			indexDataPanelVo.setV54(todayNormalAcpStakeAmount);
+			indexDataPanelVo.setV55(todayOldHToAcpStakeAmount);
+			indexDataPanelVo.setV56(todayHBalanceToAcpStakeAmount);
 
 			BigDecimal v31 = BigDecimal.ZERO;
 			BigDecimal v32 = BigDecimal.ZERO;
@@ -309,11 +337,41 @@ public class IndexDataServiceImpl implements IndexDataService {
 
 		}, asyncExecutor);
 
+		// 汇总H赠送释放桶：v57为赠送总量，v58为已释放数量。
+		BigDecimal hGiftTotalAmount = BigDecimal.ZERO;
+		BigDecimal hGiftReleasedAmount = BigDecimal.ZERO;
+		List<HGiftReleaseBucket> hGiftReleaseBucketList = hGiftReleaseBucketService.lambdaQuery()
+			.select(HGiftReleaseBucket::getTotalAmount, HGiftReleaseBucket::getReleasedAmount)
+			.list();
+		if (CollectionUtil.isNotEmpty(hGiftReleaseBucketList)) {
+			for (HGiftReleaseBucket hGiftReleaseBucket : hGiftReleaseBucketList) {
+				hGiftTotalAmount = hGiftTotalAmount.add(
+					hGiftReleaseBucket.getTotalAmount() == null ? BigDecimal.ZERO : hGiftReleaseBucket.getTotalAmount()
+				);
+				hGiftReleasedAmount = hGiftReleasedAmount.add(
+					hGiftReleaseBucket.getReleasedAmount() == null ? BigDecimal.ZERO : hGiftReleaseBucket.getReleasedAmount()
+				);
+			}
+		}
+		indexDataPanelVo.setV57(hGiftTotalAmount);
+		indexDataPanelVo.setV58(hGiftReleasedAmount);
+
 		CompletableFuture.allOf(future2, future3, future4, future5).join();
 		return indexDataPanelVo;
 	}
 
 	public String getValue(String code) {
 		return xmsRedis.get(RedisConstant.XMS_PARAM + code, () -> sysParaMapper.getValue(code), 15L, TimeUnit.DAYS);
+	}
+
+	private BigDecimal sumTodayStakeAmountByDepositSourceType(List<StakeOrder> stakeOrderList, Integer depositSourceType) {
+		if (CollectionUtil.isEmpty(stakeOrderList) || depositSourceType == null) {
+			return BigDecimal.ZERO;
+		}
+		return stakeOrderList.stream()
+			.filter(item -> depositSourceType.equals(item.getDepositSourceType()))
+			.map(StakeOrder::getStakeAmount)
+			.filter(item -> item != null)
+			.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

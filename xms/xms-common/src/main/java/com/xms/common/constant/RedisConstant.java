@@ -156,6 +156,11 @@ public interface RedisConstant {
 		String XMS_STAKE_ORDER_PLAN = REDIS_LOCK + "XMS_STAKE_ORDER_PLAN:";
 
 		/**
+		 * 真实/映射业绩历史回填补偿任务互斥锁
+		 */
+		String XMS_USER_PERFORMANCE_COMPENSATE = REDIS_LOCK + "XMS_USER_PERFORMANCE_COMPENSATE:";
+
+		/**
 		 * H赠送释放每日任务
 		 */
 		String XMS_H_GIFT_RELEASE_DAILY = REDIS_LOCK + "XMS_H_GIFT_RELEASE_DAILY:";

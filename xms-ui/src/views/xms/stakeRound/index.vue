@@ -138,6 +138,17 @@
           <dict-tag :options="dict.type.t_stake_round_status" :value="scope.row.status"/>
         </template>
       </el-table-column>
+      <el-table-column label="爆仓检测开关" align="center" prop="liquidationCheckEnabled" width="130">
+        <template slot-scope="scope">
+          <el-switch
+            v-model="scope.row.liquidationCheckEnabled"
+            :active-value="1"
+            :inactive-value="0"
+            :disabled="scope.row.status !== 0"
+            @change="handleLiquidationCheckSwitchChange(scope.row)"
+          />
+        </template>
+      </el-table-column>
       <el-table-column label="保险仓余额" align="center" prop="insuranceBalance" />
       <el-table-column label="轮次开始时间" align="center" prop="startTime" width="180">
         <template slot-scope="scope">
@@ -262,7 +273,7 @@
 </template>
 
 <script>
-import { listStakeRound, getStakeRound, delStakeRound, addStakeRound, updateStakeRound } from "@/api/xms/stakeRound";
+import { listStakeRound, getStakeRound, delStakeRound, addStakeRound, updateStakeRound, updateLiquidationCheckSwitch } from "@/api/xms/stakeRound";
 
 export default {
   name: "StakeRound",
@@ -294,6 +305,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         status: null,
+        liquidationCheckEnabled: null,
         startTime: null,
         id: null,
         liquidationTime: null,
@@ -355,6 +367,7 @@ export default {
       this.form = {
         id: null,
         status: null,
+        liquidationCheckEnabled: null,
         startTime: null,
         liquidationTime: null,
         endTime: null,
@@ -431,6 +444,19 @@ export default {
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
+    },
+    /** 修改爆仓检测开关 */
+    handleLiquidationCheckSwitchChange(row) {
+      const oldValue = row.liquidationCheckEnabled === 1 ? 0 : 1;
+      updateLiquidationCheckSwitch({
+        id: row.id,
+        liquidationCheckEnabled: row.liquidationCheckEnabled
+      }).then(() => {
+        this.$modal.msgSuccess("爆仓检测开关修改成功");
+        this.getList();
+      }).catch(() => {
+        row.liquidationCheckEnabled = oldValue;
+      });
     },
     /** 导出按钮操作 */
     handleExport() {

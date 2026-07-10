@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.xms.dao.mapper.StakeOrderMapper;
 import com.xms.dao.domain.StakeOrder;
 import com.xms.dao.entity.dto.StakeDepositSourceAmountDto;
+import com.xms.dao.entity.dto.UserStakePerformanceSourceStatDto;
 import com.xms.dao.service.IStakeOrderService;
 
 /**
@@ -41,6 +42,17 @@ public class StakeOrderServiceImpl extends XmsDataServiceImpl<StakeOrderMapper, 
     public List<StakeDepositSourceAmountDto> selectDepositSourceAmountStats()
     {
         return baseMapper.selectDepositSourceAmountStats();
+    }
+
+    /**
+     * 按用户和入金来源汇总成功订单的ACP入金数量，用于真实/映射业绩历史回填。
+     *
+     * @return 用户入金来源业绩汇总集合
+     */
+    @Override
+    public List<UserStakePerformanceSourceStatDto> selectUserPerformanceSourceStats()
+    {
+        return baseMapper.selectUserPerformanceSourceStats();
     }
 
 }

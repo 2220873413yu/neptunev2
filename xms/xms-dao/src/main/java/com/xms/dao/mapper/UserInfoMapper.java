@@ -155,6 +155,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 		"COALESCE(SUM(valid_num4),0) AS totalValidNum4, " +
 		"COALESCE(SUM(valid_num5),0) AS totalValidNum5, " +
 		"COALESCE(SUM(valid_num6),0) AS totalValidNum6, " +
+		"COALESCE(SUM(valid_num9),0) AS totalValidNum9, " +
 		"COALESCE(SUM(valid_num7),0) AS totalValidNum7 " +
 		"FROM t_user_money where deleted = 0")
 	UserMoneySumDTO queryUserMoneySum();

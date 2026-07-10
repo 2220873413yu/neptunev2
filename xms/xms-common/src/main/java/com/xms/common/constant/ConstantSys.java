@@ -198,7 +198,7 @@ public class ConstantSys {
 	public static final String biz_min_stake_amount = "biz_min_stake_amount";
 
 	//h闪兑成acp入金入金最小金额 例如:1000 填写1000
-	public static final String biz_acp_deposit_min_amount = "biz_acp_deposit_min_amount";
+	public static final String biz_h_deposit_min_amount = "biz_h_deposit_min_amount";
 
 	//ACP单价U，临时从系统参数读取，后续可替换为真实价格来源
 	public static final String biz_acp_price_usdt = "biz_acp_price_usdt";

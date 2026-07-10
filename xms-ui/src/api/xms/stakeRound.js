@@ -35,6 +35,15 @@ export function updateStakeRound(data) {
   })
 }
 
+// 修改爆仓检测开关
+export function updateLiquidationCheckSwitch(data) {
+  return request({
+    url: '/xms/stakeRound/liquidationCheckSwitch',
+    method: 'put',
+    data: data
+  })
+}
+
 // 删除全局质押轮次
 export function delStakeRound(id) {
   return request({

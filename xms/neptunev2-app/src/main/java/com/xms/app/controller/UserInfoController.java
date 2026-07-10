@@ -142,7 +142,7 @@ public class UserInfoController {
 	/**
 	 * 检查钱包地址是否注册过,返回false是没注册过,true注册过
 	 * @param address 钱包地址
-	 * @return
+	 * @return 当前用户详情，不包含已停用的旧系统迁移业绩
 	 */
 	@ApiOperation(value = "检查账号是否注册过")
 	@Anonymous
@@ -271,12 +271,6 @@ public class UserInfoController {
 		vo.setPf(userInfoBo.getPerformance());
 		vo.setHp(userInfoBo.getHistoryPerformance());
 		vo.setSa(userInfoBo.getStakeAccount());
-
-		//历史业绩
-		vo.setOhpe(userInfoBo.getOldHistoryPerformance());
-		vo.setOpe(userInfoBo.getOldPerformance());
-		vo.setOUPe(userInfoBo.getOldUmbrellaPerformance());
-
 		return ResultPista.data(vo);
 	}
 

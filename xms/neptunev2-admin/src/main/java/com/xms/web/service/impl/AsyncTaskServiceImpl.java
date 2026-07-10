@@ -17,6 +17,7 @@ import com.xms.common.config.redis.XmsRedis;
 import com.xms.common.config.redis.delayqueue.RedissonDelayHandler;
 import com.xms.common.config.redis.delayqueue.RedissonDelayOrder;
 import com.xms.common.config.redis.delayqueue.config.RedissonTemplate;
+import com.xms.common.config.redis.lock.RedisLock;
 import com.xms.common.config.redis.stream.ReadOffsetModel;
 import com.xms.common.config.redis.stream.RenegadeStreamTemplate;
 import com.xms.common.constant.*;
@@ -30,6 +31,7 @@ import com.xms.common.utils.uuid.IDUtils;
 import com.xms.dao.domain.*;
 import com.xms.dao.entity.bo.*;
 import com.xms.dao.entity.domain.*;
+import com.xms.dao.entity.dto.UserStakePerformanceSourceStatDto;
 import com.xms.dao.entity.vo.ParentUserTaskVo;
 import com.xms.dao.mapper.AsyncTaskMapper;
 import com.xms.dao.service.*;
@@ -86,7 +88,7 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 	private static final String SQL_VALID_NUM8 = "UPDATE t_user_money SET update_time=?,gt_id=?,valid_num8=valid_num8+?,source_code=?,source_type=?,source_id=? WHERE id=? ";
 	private static final String SQL_VALID_NUM9 = "UPDATE t_user_money SET update_time=?,gt_id=?,valid_num9=valid_num9+?,source_code=?,source_type=?,source_id=? WHERE id=? ";
 	private static final String SQL_H_GIFT_RELEASE_BUCKET_DAILY_RELEASE = "UPDATE t_h_gift_release_bucket SET update_time=?,released_amount=?,remaining_amount=?,released_days=?,last_release_date=?,status=? WHERE id=? AND status=1 ";
-	private static final String SQL_RECALCULATE_USER_LEVEL = "UPDATE t_user_info SET update_time=?,community_performance=?,game_level=?,layer_level=? WHERE user_id=? ";
+	private static final String SQL_RECALCULATE_USER_PERFORMANCE = "UPDATE t_user_info SET update_time=?,real_performance=?,real_umbrella_performance=?,mapping_performance=?,mapping_umbrella_performance=? WHERE user_id=? ";
 	private static final String SQL_UPDATE_AWAITING_AMOUNT = "UPDATE t_mining_package_order SET awaiting_amount = awaiting_amount + ? WHERE id = ?";
 	private static final int H_GIFT_RELEASE_STATUS_RELEASING = 1;
 	private static final int H_GIFT_RELEASE_STATUS_COMPLETED = 2;
@@ -1182,152 +1184,134 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		}
 	}
 
+
 	/**
-	 * 补偿任务：旧业绩归零后重新计算用户等级。
+	 * 根据历史成功质押订单重新计算真实/映射个人及团队业绩。
 	 *
-	 * <p>停服清理 old_* 旧业绩后执行，用当前质押后置结算同一口径重算
-	 * community_performance、game_level、layer_level。不清 old_*，不改真实业绩，
-	 * 不写钱包和奖励流水。</p>
+	 * <p>正常ACP入金(type=1)和用户H余额换ACP入金(type=4)计入真实业绩，旧系统H换ACP入金(type=3)
+	 * 计入映射业绩；团队业绩按用户当前parent_chain向上累计。任务以绝对值批量覆盖四个分类字段，重复执行不会翻倍，
+	 * 不修改现有总业绩、等级、奖励、钱包和订单。该任务必须在暂停入金的维护窗口执行。</p>
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void handelHGiftRelease() {
-		log.info("旧业绩归零后用户等级补偿重算开始");
+	@RedisLock(value = RedisConstant.LockConstant.XMS_USER_PERFORMANCE_COMPENSATE, waitTime = 0, leaseTime = 3600)
+	public void handelHGiftRelease01() {
+		log.info("真实/映射业绩历史回填开始，请确认当前处于暂停入金的维护窗口");
 
-		// 1. 一次性收集用户和等级配置，后续在内存里按父级链深度倒序计算，避免循环中反复查库。
+		// 1. 一次性读取当前用户及父级链，并在内存中把四个分类字段初始化为0，避免循环查询用户。
 		List<UserInfo> userInfoList = userInfoService.lambdaQuery()
-			.select(UserInfo::getUserId, UserInfo::getInviteUserId, UserInfo::getParentChain,
-				UserInfo::getIsValid, UserInfo::getPerformance, UserInfo::getOldPerformance,
-				UserInfo::getHistoryPerformance, UserInfo::getOldHistoryPerformance,
-				UserInfo::getUmbrellaPerformance, UserInfo::getOldUmbrellaPerformance,
-				UserInfo::getCommunityPerformance, UserInfo::getGameLevel, UserInfo::getLayerLevel)
+			.select(UserInfo::getUserId, UserInfo::getParentChain)
 			.list();
 		if (CollectionUtil.isEmpty(userInfoList)) {
-			log.info("旧业绩归零后用户等级补偿重算无用户数据");
+			log.info("真实/映射业绩历史回填无用户数据");
 			return;
 		}
-		List<UserLevelConfig> userLevelConfigList = userLevelConfigService.lambdaQuery()
-			.orderByAsc(UserLevelConfig::getLevel)
-			.list();
-		List<UserInvestLayerConfig> layerConfigList = userInvestLayerConfigService.lambdaQuery()
-			.orderByAsc(UserInvestLayerConfig::getMinInvest)
-			.list();
-		Map<Long, List<UserInfo>> directUserMap = userInfoList.stream()
-			.filter(item -> item.getInviteUserId() != null)
-			.collect(Collectors.groupingBy(UserInfo::getInviteUserId));
+		Map<Long, UserInfo> userInfoMap = new HashMap<>(userInfoList.size());
+		for (UserInfo userInfo : userInfoList) {
+			userInfo.setRealPerformance(BigDecimal.ZERO);
+			userInfo.setRealUmbrellaPerformance(BigDecimal.ZERO);
+			userInfo.setMappingPerformance(BigDecimal.ZERO);
+			userInfo.setMappingUmbrellaPerformance(BigDecimal.ZERO);
+			userInfoMap.put(userInfo.getUserId(), userInfo);
+		}
 
-		// 2. 叶子节点先算、上级后算。当前小区业绩依赖直推线有效业绩，倒序也方便后续扩展团队重算。
-		List<UserInfo> sortUserInfoList = userInfoList.stream()
-			.sorted((item1, item2) -> {
-				int depthCompare = Integer.compare(getUserParentDepth(item2), getUserParentDepth(item1));
-				if (depthCompare != 0) {
-					return depthCompare;
+		// 2. 数据库先按用户和来源聚合成功订单，避免将每一笔历史订单加载到内存。
+		List<UserStakePerformanceSourceStatDto> sourceStatList = stakeOrderService.selectUserPerformanceSourceStats();
+		BigDecimal realPerformanceTotal = BigDecimal.ZERO;
+		BigDecimal mappingPerformanceTotal = BigDecimal.ZERO;
+		int missingOrderUserCount = 0;
+		int missingParentCount = 0;
+		if (CollectionUtil.isNotEmpty(sourceStatList)) {
+			for (UserStakePerformanceSourceStatDto sourceStat : sourceStatList) {
+				BigDecimal amount = sourceStat.getTotalStakeAmount() == null
+					? BigDecimal.ZERO : sourceStat.getTotalStakeAmount();
+				if (amount.compareTo(BigDecimal.ZERO) <= 0 || sourceStat.getDepositSourceType() == null) {
+					continue;
 				}
-				return Long.compare(item2.getUserId(), item1.getUserId());
-			})
-			.collect(Collectors.toList());
+				UserInfo orderUser = userInfoMap.get(sourceStat.getUserId());
+				if (orderUser == null) {
+					missingOrderUserCount++;
+					log.warn("历史业绩回填跳过不存在的订单用户 userId:{} sourceType:{} amount:{}",
+						sourceStat.getUserId(), sourceStat.getDepositSourceType(), amount);
+					continue;
+				}
 
-		// 3. 构造补偿更新对象，只更新小区业绩、用户等级和层级等级，按批量统一落库。
+				boolean realPerformance = sourceStat.getDepositSourceType().equals(ConstantType.stake_order_deposit_source_type.type_1)
+					|| sourceStat.getDepositSourceType().equals(ConstantType.stake_order_deposit_source_type.type_4);
+				boolean mappingPerformance = sourceStat.getDepositSourceType().equals(ConstantType.stake_order_deposit_source_type.type_3);
+				if (!realPerformance && !mappingPerformance) {
+					continue;
+				}
+
+				// 3. 个人业绩计入下单用户，团队业绩按该用户当前父级链计入全部父级，不包含本人。
+				if (realPerformance) {
+					orderUser.setRealPerformance(orderUser.getRealPerformance().add(amount));
+					realPerformanceTotal = realPerformanceTotal.add(amount);
+				} else {
+					orderUser.setMappingPerformance(orderUser.getMappingPerformance().add(amount));
+					mappingPerformanceTotal = mappingPerformanceTotal.add(amount);
+				}
+				for (Long parentId : orderUser.getParentIds()) {
+					UserInfo parentUser = userInfoMap.get(parentId);
+					if (parentUser == null) {
+						missingParentCount++;
+						continue;
+					}
+					if (realPerformance) {
+						parentUser.setRealUmbrellaPerformance(parentUser.getRealUmbrellaPerformance().add(amount));
+					} else {
+						parentUser.setMappingUmbrellaPerformance(parentUser.getMappingUmbrellaPerformance().add(amount));
+					}
+				}
+			}
+		}
+
+		// 4. 批量覆盖最终绝对值，用户无历史订单时也会被明确回填为0，保证任务幂等。
 		Date now = new Date();
 		int batchSize = 1000;
-		List<UserInfo> updateUserInfoList = new ArrayList<>(Math.min(sortUserInfoList.size(), batchSize));
-		for (UserInfo userInfo : sortUserInfoList) {
-			BigDecimal communityPerformance = calculateCompensateCommunityPerformance(userInfo, directUserMap);
-			Integer gameLevel = calculateCompensateGameLevel(userInfo, communityPerformance, userLevelConfigList);
-			Integer layerLevel = calculateCompensateLayerLevel(userInfo.getEffectiveHistoryPerformance(), layerConfigList);
-
-			UserInfo updateUserInfo = new UserInfo();
-			updateUserInfo.setUserId(userInfo.getUserId());
-			updateUserInfo.setCommunityPerformance(communityPerformance);
-			updateUserInfo.setGameLevel(gameLevel);
-			updateUserInfo.setLayerLevel(layerLevel);
-			updateUserInfo.setUpdateTime(now);
-			updateUserInfoList.add(updateUserInfo);
+		List<UserInfo> updateUserInfoList = new ArrayList<>(Math.min(userInfoList.size(), batchSize));
+		for (UserInfo userInfo : userInfoList) {
+			userInfo.setUpdateTime(now);
+			updateUserInfoList.add(userInfo);
 			if (updateUserInfoList.size() >= batchSize) {
-				batchUpdateUserLevelCompensate(updateUserInfoList);
+				batchUpdateUserPerformanceCompensate(updateUserInfoList);
 				updateUserInfoList.clear();
 			}
 		}
 		if (CollectionUtil.isNotEmpty(updateUserInfoList)) {
-			batchUpdateUserLevelCompensate(updateUserInfoList);
+			batchUpdateUserPerformanceCompensate(updateUserInfoList);
 		}
 
-		log.info("旧业绩归零后用户等级补偿重算完成, userCount:{}", userInfoList.size());
+		BigDecimal realUmbrellaPerformanceTotal = userInfoList.stream()
+			.map(UserInfo::getRealUmbrellaPerformance).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal mappingUmbrellaPerformanceTotal = userInfoList.stream()
+			.map(UserInfo::getMappingUmbrellaPerformance).reduce(BigDecimal.ZERO, BigDecimal::add);
+		log.info("真实/映射业绩历史回填完成 userCount:{} sourceStatCount:{} realPerformanceTotal:{} " +
+				"mappingPerformanceTotal:{} realUmbrellaPerformanceTotal:{} mappingUmbrellaPerformanceTotal:{} " +
+				"missingOrderUserCount:{} missingParentCount:{}",
+			userInfoList.size(), sourceStatList == null ? 0 : sourceStatList.size(), realPerformanceTotal,
+			mappingPerformanceTotal, realUmbrellaPerformanceTotal, mappingUmbrellaPerformanceTotal,
+			missingOrderUserCount, missingParentCount);
 	}
 
-	private BigDecimal calculateCompensateCommunityPerformance(UserInfo userInfo, Map<Long, List<UserInfo>> directUserMap) {
-		List<UserInfo> children = directUserMap.get(userInfo.getUserId());
-		if (CollectionUtil.isEmpty(children) || children.size() <= 1) {
-			return BigDecimal.ZERO;
-		}
-		BigDecimal totalChildPerformance = BigDecimal.ZERO;
-		BigDecimal maxChildPerformance = BigDecimal.ZERO;
-		for (UserInfo child : children) {
-			BigDecimal childLinePerformance = child.getEffectiveUmbrellaPerformance()
-				.add(child.getEffectivePerformance());
-			totalChildPerformance = totalChildPerformance.add(childLinePerformance);
-			if (childLinePerformance.compareTo(maxChildPerformance) > 0) {
-				maxChildPerformance = childLinePerformance;
-			}
-		}
-		BigDecimal communityPerformance = totalChildPerformance.subtract(maxChildPerformance);
-		return communityPerformance.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : communityPerformance;
-	}
-
-	private Integer calculateCompensateGameLevel(UserInfo userInfo, BigDecimal communityPerformance,
-												List<UserLevelConfig> userLevelConfigList) {
-		if (userInfo.getIsValid() == null || userInfo.getIsValid().equals(0)) {
-			return userInfo.getGameLevel() == null ? 0 : userInfo.getGameLevel();
-		}
-		Integer gameLevel = 0;
-		if (CollectionUtil.isNotEmpty(userLevelConfigList)) {
-			for (UserLevelConfig userLevelConfig : userLevelConfigList) {
-				if (communityPerformance.compareTo(userLevelConfig.getUmbrellaPerformance()) >= 0) {
-					gameLevel = userLevelConfig.getLevel();
-				}
-			}
-		}
-		return gameLevel;
-	}
-
-	private Integer calculateCompensateLayerLevel(BigDecimal historyPerformance,
-												 List<UserInvestLayerConfig> layerConfigList) {
-		Integer layerLevel = 0;
-		if (CollectionUtil.isNotEmpty(layerConfigList)) {
-			for (UserInvestLayerConfig config : layerConfigList) {
-				if (historyPerformance.compareTo(config.getMinInvest()) >= 0) {
-					layerLevel = config.getLevel();
-				} else {
-					break;
-				}
-			}
-		}
-		return layerLevel;
-	}
-
-	private int getUserParentDepth(UserInfo userInfo) {
-		if (StrUtil.isBlank(userInfo.getParentChain())) {
-			return 0;
-		}
-		int depth = 0;
-		for (String parentId : userInfo.getParentChain().split(",")) {
-			if (StrUtil.isNotBlank(parentId)) {
-				depth++;
-			}
-		}
-		return depth;
-	}
-
-	private void batchUpdateUserLevelCompensate(List<UserInfo> userInfoList) {
-		int[] ints = jdbcTemplate.batchUpdate(SQL_RECALCULATE_USER_LEVEL, new BatchPreparedStatementSetter() {
+	/**
+	 * 批量覆盖用户真实/映射个人及团队业绩的最终值。
+	 *
+	 * <p>调用方已在内存完成全量重算；这里不做增量相加，任一用户更新失败会标记事务回滚。</p>
+	 *
+	 * @param userInfoList 待更新用户，四项业绩单位均为ACP
+	 */
+	private void batchUpdateUserPerformanceCompensate(List<UserInfo> userInfoList) {
+		int[] ints = jdbcTemplate.batchUpdate(SQL_RECALCULATE_USER_PERFORMANCE, new BatchPreparedStatementSetter() {
 			@Override
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
 				UserInfo userInfo = userInfoList.get(i);
 				ps.setTimestamp(1, new java.sql.Timestamp(userInfo.getUpdateTime().getTime()));
-				ps.setBigDecimal(2, userInfo.getCommunityPerformance());
-				ps.setInt(3, userInfo.getGameLevel());
-				ps.setInt(4, userInfo.getLayerLevel());
-				ps.setLong(5, userInfo.getUserId());
+				ps.setBigDecimal(2, userInfo.getRealPerformance());
+				ps.setBigDecimal(3, userInfo.getRealUmbrellaPerformance());
+				ps.setBigDecimal(4, userInfo.getMappingPerformance());
+				ps.setBigDecimal(5, userInfo.getMappingUmbrellaPerformance());
+				ps.setLong(6, userInfo.getUserId());
 			}
 
 			@Override
@@ -1337,8 +1321,8 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 		});
 		if (ArrayUtil.contains(ints, 0)) {
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-			log.error("旧业绩归零后用户等级补偿重算回滚");
-			throw new ServiceException("旧业绩归零后用户等级补偿重算失败");
+			log.error("真实/映射业绩历史回填批量更新失败，事务回滚");
+			throw new ServiceException("真实/映射业绩历史回填失败");
 		}
 	}
 
@@ -2212,8 +2196,14 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 	}
 
 	/**
-	 * 新增奖励
-	 * @param totalStaticReward
+	 * 按昨日新增业绩占比分配新增奖励池。
+	 *
+	 * <p>奖励池金额来自当日全网静态收益乘以配置比例，分配基数只统计正常 ACP 入金和用户 H 余额换 ACP 入金；
+	 * 旧系统 H 换 ACP 入金不参与新增奖励分母和个人分子，但不影响其它静态、动态和业绩结算链路。</p>
+	 *
+	 * @param totalStaticReward 当日全网静态收益总额
+	 * @param sourceCode 本次新增奖励池批次号，用于钱包流水和奖励记录追踪
+	 * @param userMoney3Map 动态收益累计 Map，发放后会由调用方累计到用户仓位 dynamic_reward
 	 */
 	private void sendStakeNewReward(BigDecimal totalStaticReward,String sourceCode, Map<Long, BigDecimal> userMoney3Map) {
 		BigDecimal stakeNewRewardPoolRatio = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_stake_new_reward_pool_ratio));
@@ -2229,6 +2219,9 @@ public class AsyncTaskServiceImpl implements IAsyncTaskService {
 			List<StakeOrder> yesterDayOrderList = stakeOrderService.lambdaQuery()
 				.eq(StakeOrder::getCreateDay, Integer.valueOf(DateUtil.format(DateUtil.yesterday(), "yyyyMMdd")))
 				.gt(StakeOrder::getBelongUserId, 0)
+				.in(StakeOrder::getDepositSourceType,
+					ConstantType.stake_order_deposit_source_type.type_1,
+					ConstantType.stake_order_deposit_source_type.type_4)
 				.list();
 
 			if(CollectionUtil.isNotEmpty(yesterDayOrderList)){
@@ -3874,23 +3867,6 @@ private void bachUpdateMoneyValid7(List<UserMoney> userMoneyList) {
 		}
 	}
 
-private void batchHandleValidNum8Transfer(List<UserMoney> transferValidNum8List,
-										  List<UserMoney> transferValidNum3List,
-										  List<UserMoney> transferValidNum7List,
-										  List<UserMoney> burnValidNum8List) {
-	if (CollectionUtil.isNotEmpty(transferValidNum8List)) {
-		bachUpdateMoneyValid8(transferValidNum8List);
-	}
-	if (CollectionUtil.isNotEmpty(transferValidNum7List)) {
-		bachUpdateMoneyValid7(transferValidNum7List);
-	}
-	if (CollectionUtil.isNotEmpty(transferValidNum3List)) {
-		bachUpdateMoneyValid3(transferValidNum3List);
-	}
-	if (CollectionUtil.isNotEmpty(burnValidNum8List)) {
-		bachUpdateMoneyValid8(burnValidNum8List);
-	}
-}
 
 /**
  * 返回相差几秒，如果当前时间晚于结束时间则返回固定的10秒

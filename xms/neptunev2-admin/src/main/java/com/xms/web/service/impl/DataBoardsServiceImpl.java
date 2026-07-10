@@ -80,7 +80,7 @@ public class DataBoardsServiceImpl implements DataBoardsService {
 		set.put("v11", indexDataPanelVo.getV11());
 		set.put("v12", indexDataPanelVo.getV12());
 		set.put("v13", indexDataPanelVo.getV13());
-//		set.put("v14", indexDataPanelVo.getV14());
+		set.put("v14", indexDataPanelVo.getV14());
 //		set.put("v15", indexDataPanelVo.getV15());
 //		set.put("v16", indexDataPanelVo.getV16());
 //		set.put("v17", indexDataPanelVo.getV17());
@@ -117,6 +117,11 @@ public class DataBoardsServiceImpl implements DataBoardsService {
 		set.put("v51", indexDataPanelVo.getV51());
 		set.put("v52", indexDataPanelVo.getV52());
 		set.put("v53", indexDataPanelVo.getV53());
+		set.put("v54", indexDataPanelVo.getV54());
+		set.put("v55", indexDataPanelVo.getV55());
+		set.put("v56", indexDataPanelVo.getV56());
+		set.put("v57", indexDataPanelVo.getV57());
+		set.put("v58", indexDataPanelVo.getV58());
 
 		List<Withdrawal> withdrawalList = SpringUtil.getBean(WithdrawalServiceImpl.class).lambdaQuery()
 			.in(Withdrawal::getStatus, 3)

@@ -13,4 +13,5 @@ public class UserMoneySumDTO {
     private BigDecimal totalValidNum5;
     private BigDecimal totalValidNum6;
     private BigDecimal totalValidNum7;
+    private BigDecimal totalValidNum9;
 }

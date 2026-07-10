@@ -259,6 +259,15 @@
                               :duration='2000' />
                   </div>
                 </div>
+                <div class="data-item">
+                  <div class="data-label">全网H代币</div>
+                  <div class="data-value">
+                    <count-to :startVal='0'
+                              :decimals="getDecimalLen(fromData.v14)"
+                              :endVal='toNumber(fromData.v14)'
+                              :duration='2000' />
+                  </div>
+                </div>
               </div>
             </div>
           </el-card>
@@ -354,6 +363,33 @@
                   </div>
                 </div>
                 <div class="data-item">
+                  <div class="data-label">今日正常ACP入金</div>
+                  <div class="data-value">
+                    <count-to :startVal='0'
+                              :decimals="getDecimalLen(fromData.v54)"
+                              :endVal='toNumber(fromData.v54)'
+                              :duration='2000' />
+                  </div>
+                </div>
+                <div class="data-item">
+                  <div class="data-label">今日旧系统入金</div>
+                  <div class="data-value">
+                    <count-to :startVal='0'
+                              :decimals="getDecimalLen(fromData.v55)"
+                              :endVal='toNumber(fromData.v55)'
+                              :duration='2000' />
+                  </div>
+                </div>
+                <div class="data-item">
+                  <div class="data-label">今日H余额换ACP</div>
+                  <div class="data-value">
+                    <count-to :startVal='0'
+                              :decimals="getDecimalLen(fromData.v56)"
+                              :endVal='toNumber(fromData.v56)'
+                              :duration='2000' />
+                  </div>
+                </div>
+                <div class="data-item">
                   <div class="data-label">今日发放工作室收益</div>
                   <div class="data-value">
                     <count-to :startVal='0'
@@ -397,45 +433,78 @@
         </el-col>
 
         <el-col :xs="24" :sm="12" :lg="6" class="mb-10">
-          <el-card class="dashboard-card deposit-card" shadow="hover">
-            <template #header>
-              <div class="card-header">
-                <i class="el-icon-coin"></i>
-                <span>入金统计</span>
+          <div class="side-card-stack">
+            <el-card class="dashboard-card deposit-card" shadow="hover">
+              <template #header>
+                <div class="card-header">
+                  <i class="el-icon-coin"></i>
+                  <span>入金统计</span>
+                </div>
+              </template>
+              <div class="card-content">
+                <div class="data-list">
+                  <div class="data-item">
+                    <div class="data-label">正常ACP入金</div>
+                    <div class="data-value">
+                      <count-to :startVal='0'
+                                :decimals="getDecimalLen(fromData.v51)"
+                                :endVal='toNumber(fromData.v51)'
+                                :duration='2000' />
+                    </div>
+                  </div>
+                  <div class="data-item">
+                    <div class="data-label">旧系统入金</div>
+                    <div class="data-value">
+                      <count-to :startVal='0'
+                                :decimals="getDecimalLen(fromData.v52)"
+                                :endVal='toNumber(fromData.v52)'
+                                :duration='2000' />
+                    </div>
+                  </div>
+                  <div class="data-item">
+                    <div class="data-label">H余额换ACP</div>
+                    <div class="data-value">
+                      <count-to :startVal='0'
+                                :decimals="getDecimalLen(fromData.v53)"
+                                :endVal='toNumber(fromData.v53)'
+                                :duration='2000' />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </template>
-            <div class="card-content">
-              <div class="data-list">
-                <div class="data-item">
-                  <div class="data-label">正常ACP入金</div>
-                  <div class="data-value">
-                    <count-to :startVal='0'
-                              :decimals="getDecimalLen(fromData.v51)"
-                              :endVal='toNumber(fromData.v51)'
-                              :duration='2000' />
-                  </div>
+            </el-card>
+
+            <el-card class="dashboard-card gift-release-card" shadow="hover">
+              <template #header>
+                <div class="card-header">
+                  <i class="el-icon-present"></i>
+                  <span>H赠送释放</span>
                 </div>
-                <div class="data-item">
-                  <div class="data-label">旧系统入金</div>
-                  <div class="data-value">
-                    <count-to :startVal='0'
-                              :decimals="getDecimalLen(fromData.v52)"
-                              :endVal='toNumber(fromData.v52)'
-                              :duration='2000' />
+              </template>
+              <div class="card-content">
+                <div class="data-list">
+                  <div class="data-item">
+                    <div class="data-label">H赠送释放总量</div>
+                    <div class="data-value">
+                      <count-to :startVal='0'
+                                :decimals="getDecimalLen(fromData.v57)"
+                                :endVal='toNumber(fromData.v57)'
+                                :duration='2000' />
+                    </div>
                   </div>
-                </div>
-                <div class="data-item">
-                  <div class="data-label">H余额换ACP</div>
-                  <div class="data-value">
-                    <count-to :startVal='0'
-                              :decimals="getDecimalLen(fromData.v53)"
-                              :endVal='toNumber(fromData.v53)'
-                              :duration='2000' />
+                  <div class="data-item">
+                    <div class="data-label">H赠送已释放</div>
+                    <div class="data-value">
+                      <count-to :startVal='0'
+                                :decimals="getDecimalLen(fromData.v58)"
+                                :endVal='toNumber(fromData.v58)'
+                                :duration='2000' />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </el-card>
+            </el-card>
+          </div>
         </el-col>
 
         <!-- 收益数据卡片 -->
@@ -732,7 +801,12 @@ export default {
         v50: 0,
         v51: 0,
         v52: 0,
-        v53: 0
+        v53: 0,
+        v54: 0,
+        v55: 0,
+        v56: 0,
+        v57: 0,
+        v58: 0
       }
     }
   },
@@ -872,6 +946,12 @@ export default {
 }
 
 // 数据卡片
+.side-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .dashboard-card {
   min-height: 180px;
   border-radius: 8px;
@@ -974,6 +1054,13 @@ export default {
   border-top: 3px solid #67C23A;
   .card-header {
     color: #67C23A;
+  }
+}
+
+.gift-release-card {
+  border-top: 3px solid #409EFF;
+  .card-header {
+    color: #409EFF;
   }
 }
 

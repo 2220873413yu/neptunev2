@@ -58,19 +58,4 @@ public class UserInfoDetailVo {
 	/** 原属性 stakeAccount，质押次数 */
 	private Long sa;
 
-	/**
-	 * 旧系统历史业绩(oldHistoryPerformance)
-	 */
-	private BigDecimal ohpe;
-
-	/**
-	 * 旧系统个人业绩
-	 */
-	private BigDecimal ope;
-
-	/**
-	 * 旧系统团队业绩
-	 */
-	private BigDecimal oUPe;
-
 }

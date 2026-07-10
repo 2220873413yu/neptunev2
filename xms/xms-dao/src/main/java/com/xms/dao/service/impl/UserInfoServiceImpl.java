@@ -50,7 +50,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Autowired
 	private IUserStakePositionService userStakePositionService;
 	/**
-	 * 用户详情
+	 * 查询用户当前体系详情，不再返回已停用的旧系统迁移业绩。
+	 *
+	 * @param userId 用户ID
+	 * @return 用户当前等级、关系和业绩信息
 	 */
 	@Override
 	public UserInfoBo getUserInfo(Long userId) {
@@ -81,12 +84,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			.count();
 		userInfoBo.setStakeAccount(count);
 
-		//旧系统历史业绩
-		userInfoBo.setOldHistoryPerformance(userInfo.getOldHistoryPerformance());
-		//旧系统个人业绩
-		userInfoBo.setOldPerformance(userInfo.getOldPerformance());
-		//旧系统团队业绩
-		userInfoBo.setOldUmbrellaPerformance(userInfo.getOldUmbrellaPerformance());
 		//userInfoBo.setIsActive(userInfo.getIsActive());
 		//userInfoBo.setActivationCount(userInfo.getActivationCount());
 		return userInfoBo;

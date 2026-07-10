@@ -352,12 +352,20 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="赠送业绩(质押量)" align="center" width="150">
+      <el-table-column label="真实业绩(质押量)" align="center" width="170">
         <template slot-scope="scope">
           <div class="exchange-info" style="text-align: left;">
-            我的业绩: {{ scope.row.oldPerformance }} <br>
-            团队业绩: {{ scope.row.oldUmbrellaPerformance }} <br>
-            当前轮业绩: {{ scope.row.oldHistoryPerformance }} <br>
+            真实个人: {{ scope.row.realPerformance || 0 }} <br>
+            真实团队: {{ scope.row.realUmbrellaPerformance || 0 }}
+          </div>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="映射业绩(质押量)" align="center" width="170">
+        <template slot-scope="scope">
+          <div class="exchange-info" style="text-align: left;">
+            映射个人: {{ scope.row.mappingPerformance || 0 }} <br>
+            映射团队: {{ scope.row.mappingUmbrellaPerformance || 0 }}
           </div>
         </template>
       </el-table-column>

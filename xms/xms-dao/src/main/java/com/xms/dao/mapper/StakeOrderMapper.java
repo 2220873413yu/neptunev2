@@ -5,6 +5,7 @@ import com.xms.dao.mapper.XmsMapper;
 
 import com.xms.dao.domain.StakeOrder;
 import com.xms.dao.entity.dto.StakeDepositSourceAmountDto;
+import com.xms.dao.entity.dto.UserStakePerformanceSourceStatDto;
 
 /**
  * 质押订单Mapper接口
@@ -28,5 +29,12 @@ public interface StakeOrderMapper extends XmsMapper<StakeOrder>
      * @return 入金来源金额统计集合
      */
     public List<StakeDepositSourceAmountDto> selectDepositSourceAmountStats();
+
+    /**
+     * 按用户和入金来源汇总成功订单的ACP入金数量，用于真实/映射业绩历史回填。
+     *
+     * @return 用户入金来源业绩汇总集合
+     */
+    public List<UserStakePerformanceSourceStatDto> selectUserPerformanceSourceStats();
 
 }

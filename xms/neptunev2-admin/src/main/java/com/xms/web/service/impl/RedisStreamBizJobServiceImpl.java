@@ -262,8 +262,12 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 	}
 
 	/**
-	 * 处理用户之前没有在dapp注册但是购买了节点的数据
-	 * @param orderMsgDO
+	 * 处理当前轮次爆仓检测消息。
+	 *
+	 * <p>只有进行中轮次且爆仓检测开关开启时才会进入爆仓公式判断；如果消息投递后管理员关闭开关，
+	 * 这里会按最新开关状态跳过，避免继续清钱包、冻结提现和创建新轮次。</p>
+	 *
+	 * @param orderMsgDO Redis Stream 消息，id 为 stake_round_id，bizType=2
 	 */
 	@Transactional(rollbackFor = Exception.class)
 	@RedisLock(value = RedisConstant.LockConstant.XMS_STAKE_ORDER_PLAN)
@@ -273,6 +277,10 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 			.eq(StakeRound::getStatus, 0)
 			.one();
 		if(stakeRound!=null){
+			if (!Integer.valueOf(1).equals(stakeRound.getLiquidationCheckEnabled())) {
+				log.info("当前轮次爆仓检测开关关闭，跳过爆仓检测 stakeRoundId:{}", stakeRound.getId());
+				return;
+			}
 			//(玩家参与的总量小于+购买贡献分总额)<发放的工作室收益+累计提现总额
 			BigDecimal t1= stakeRound.getPlayerStakeTotal().add(stakeRound.getBuyPointTotal());
 			BigDecimal t2 = stakeRound.getStudioSubsidyTotal().add(stakeRound.getWithdrawRewardTotalFull());
@@ -529,6 +537,7 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 				insertRound.setStudioSubsidyTotal(BigDecimal.ZERO);
 				insertRound.setWithdrawRewardTotalFull(BigDecimal.ZERO);
 				insertRound.setInsuranceBalance(BigDecimal.ZERO);
+				insertRound.setLiquidationCheckEnabled(1);
 				boolean save = stakeRoundService.save(insertRound);
 				if(!save){
 					throw new ServiceException("创建新的轮次信息失败");
@@ -1245,8 +1254,7 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 	/**
 	 * 计算小区业绩
 	 *
-	 * <p>直推线业绩 = 直推用户有效团队业绩 + 直推用户有效个人业绩。
-	 * 有效业绩包含新系统实时业绩和旧系统迁移 old_* 业绩，用于宽限期内按新旧合并口径重算小区。</p>
+	 * <p>直推线业绩 = 直推用户当前团队业绩 + 直推用户当前个人业绩。</p>
 	 *
 	 * @param parentIds
 	 */
@@ -1268,7 +1276,7 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 				BigDecimal totalChildPerformance = BigDecimal.ZERO;
 				BigDecimal maxChildPerformance = BigDecimal.ZERO;
 				for (UserInfo child : children) {
-					// 使用有效业绩，避免旧用户迁移 old_* 业绩在小区业绩考核中被漏算。
+					// 按当前体系个人和团队总业绩计算直推线业绩。
 					BigDecimal childUmbrella =  child.getEffectiveUmbrellaPerformance();
 					BigDecimal performance = child.getEffectivePerformance();
 					childUmbrella = childUmbrella.add(performance);
@@ -1296,7 +1304,7 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 	/**
 	 * 计算小区业绩(废弃)
 	 *
-	 * <p>保留与正式方法相同的新旧合并口径，避免临时重算时漏掉旧系统迁移 old_* 业绩。</p>
+	 * <p>保留与正式方法相同的当前体系业绩口径。</p>
 	 *
 	 * @param parentIds
 	 */
@@ -1317,7 +1325,7 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 				BigDecimal totalChildPerformance = BigDecimal.ZERO;
 				BigDecimal maxChildPerformance = BigDecimal.ZERO;
 				for (UserInfo child : children) {
-					// 使用有效业绩，避免旧用户迁移 old_* 业绩在小区业绩考核中被漏算。
+					// 按当前体系个人和团队总业绩计算直推线业绩。
 					BigDecimal childUmbrella = child.getEffectiveUmbrellaPerformance();
 					BigDecimal performance = child.getEffectivePerformance();
 					childUmbrella = childUmbrella.add(performance);

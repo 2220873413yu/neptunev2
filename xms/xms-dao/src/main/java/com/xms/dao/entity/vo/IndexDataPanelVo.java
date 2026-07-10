@@ -67,6 +67,10 @@ public class IndexDataPanelVo {
 
 
 
+	/**
+	 * 全网总H代币
+	 */
+	private BigDecimal v14 = BigDecimal.ZERO;
 
 
 
@@ -280,4 +284,29 @@ public class IndexDataPanelVo {
 	 * 用户H余额换ACP入金总额
 	 */
 	private BigDecimal v53 = BigDecimal.ZERO;
+
+	/**
+	 * 今日正常ACP入金业绩
+	 */
+	private BigDecimal v54 = BigDecimal.ZERO;
+
+	/**
+	 * 今日旧系统H换ACP入金业绩
+	 */
+	private BigDecimal v55 = BigDecimal.ZERO;
+
+	/**
+	 * 今日用户H余额换ACP入金业绩
+	 */
+	private BigDecimal v56 = BigDecimal.ZERO;
+
+	/**
+	 * H赠送释放桶总量
+	 */
+	private BigDecimal v57 = BigDecimal.ZERO;
+
+	/**
+	 * H赠送释放桶已释放数量
+	 */
+	private BigDecimal v58 = BigDecimal.ZERO;
 }

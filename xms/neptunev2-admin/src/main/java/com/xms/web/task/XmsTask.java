@@ -122,11 +122,11 @@ public class XmsTask {
 	}
 
 	/**
-	 * 补偿任务 重新计算用户等级
+	 * 补偿任务：按历史成功质押订单重新计算真实/映射业绩
 	 */
-	public void handelHGiftRelease() {
-		log.info("补偿任务 重新计算用户等级");
-		asyncTaskServiceImpl.handelHGiftRelease();
+	public void handelHGiftRelease01() {
+		log.info("补偿任务：重新计算用户真实/映射业绩");
+		asyncTaskServiceImpl.handelHGiftRelease01();
 	}
 
 //	/**

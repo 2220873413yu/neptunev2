@@ -139,10 +139,18 @@ public class UserInfo extends BaseXmsEntity {
 	private BigDecimal performance;
 
 	/**
-	 * 旧系统个人业绩
+	 * 真实个人业绩：正常ACP入金和用户H余额换ACP入金
 	 */
-	@Excel(name = "旧系统个人业绩", sort = 6)
-	private BigDecimal oldPerformance;
+	@Excel(name = "真实个人业绩", sort = 6)
+	@ApiModelProperty(value = "真实个人业绩")
+	private BigDecimal realPerformance;
+
+	/**
+	 * 映射个人业绩：旧系统H换ACP入金
+	 */
+	@Excel(name = "映射个人业绩", sort = 6)
+	@ApiModelProperty(value = "映射个人业绩")
+	private BigDecimal mappingPerformance;
 
 	/**
 	 * 当前轮业绩
@@ -151,23 +159,10 @@ public class UserInfo extends BaseXmsEntity {
 	private BigDecimal historyPerformance;
 
 	/**
-	 * 旧系统历史业绩
-	 */
-	@Excel(name = "旧系统历史业绩", sort = 6)
-	private BigDecimal oldHistoryPerformance;
-
-
-	/**
 	 * 直推业绩(质押量)
 	 */
 	@Excel(name = "直推业绩(质押量)", sort = 6)
 	private BigDecimal subPerformance;
-
-	/**
-	 * 旧系统直推业绩
-	 */
-	@Excel(name = "旧系统直推业绩", sort = 6)
-	private BigDecimal oldSubPerformance;
 
 	/**
 	 * 小区业绩(质押量)
@@ -182,10 +177,18 @@ public class UserInfo extends BaseXmsEntity {
 	private BigDecimal umbrellaPerformance;
 
 	/**
-	 * 旧系统团队业绩
+	 * 真实团队业绩：下级正常ACP入金和用户H余额换ACP入金
 	 */
-	@Excel(name = "旧系统团队业绩", sort = 6)
-	private BigDecimal oldUmbrellaPerformance;
+	@Excel(name = "真实团队业绩", sort = 6)
+	@ApiModelProperty(value = "真实团队业绩")
+	private BigDecimal realUmbrellaPerformance;
+
+	/**
+	 * 映射团队业绩：下级旧系统H换ACP入金
+	 */
+	@Excel(name = "映射团队业绩", sort = 6)
+	@ApiModelProperty(value = "映射团队业绩")
+	private BigDecimal mappingUmbrellaPerformance;
 
 	/**
 	 * 直推用户数
@@ -283,20 +286,40 @@ public class UserInfo extends BaseXmsEntity {
 			.collect(Collectors.toList());
 	}
 
+	/**
+	 * 获取当前体系个人业绩，空值按0处理。
+	 *
+	 * @return 当前个人业绩，单位ACP
+	 */
 	public BigDecimal getEffectivePerformance() {
-		return zeroIfNull(this.performance).add(zeroIfNull(this.oldPerformance));
+		return zeroIfNull(this.performance);
 	}
 
+	/**
+	 * 获取当前轮历史业绩，空值按0处理。
+	 *
+	 * @return 当前轮历史业绩，单位ACP
+	 */
 	public BigDecimal getEffectiveHistoryPerformance() {
-		return zeroIfNull(this.historyPerformance).add(zeroIfNull(this.oldHistoryPerformance));
+		return zeroIfNull(this.historyPerformance);
 	}
 
+	/**
+	 * 获取当前体系直推业绩，空值按0处理。
+	 *
+	 * @return 当前直推业绩，单位ACP
+	 */
 	public BigDecimal getEffectiveSubPerformance() {
-		return zeroIfNull(this.subPerformance).add(zeroIfNull(this.oldSubPerformance));
+		return zeroIfNull(this.subPerformance);
 	}
 
+	/**
+	 * 获取当前体系团队业绩，空值按0处理。
+	 *
+	 * @return 当前团队业绩，单位ACP
+	 */
 	public BigDecimal getEffectiveUmbrellaPerformance() {
-		return zeroIfNull(this.umbrellaPerformance).add(zeroIfNull(this.oldUmbrellaPerformance));
+		return zeroIfNull(this.umbrellaPerformance);
 	}
 
 	private BigDecimal zeroIfNull(BigDecimal amount) {

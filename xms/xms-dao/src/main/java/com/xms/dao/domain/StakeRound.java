@@ -55,6 +55,12 @@ public class StakeRound extends BaseEntity {
 	/** 是否处理爆仓业务 0:否,1:是 */
 	@Excel(name = "是否处理爆仓业务",sort = 5,readConverterExp = "0=否,1=是")
 	private Integer bizStatus;
+
+	/** 爆仓检测开关：0关闭，1开启 */
+	@Excel(name = "爆仓检测开关", sort = 6, readConverterExp = "0=关闭,1=开启")
+	@ApiModelProperty(value = "爆仓检测开关：0关闭，1开启")
+	private Integer liquidationCheckEnabled;
+
 	/** 买积分的h余额 */
 	@Excel(name = "买贡献分花费的h代币数量",sort = 6)
 	private BigDecimal buyPointTotal;
@@ -95,6 +101,7 @@ public class StakeRound extends BaseEntity {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("id", getId())
             .append("status", getStatus())
+            .append("liquidationCheckEnabled", getLiquidationCheckEnabled())
             .append("startTime", getStartTime())
             .append("liquidationTime", getLiquidationTime())
             .append("endTime", getEndTime())

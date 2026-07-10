@@ -103,22 +103,6 @@ public class UserInfoBo{
 	 */
 	private Long stakeAccount;
 
-
-	/**
-	 * 旧系统历史业绩
-	 */
-	private BigDecimal oldHistoryPerformance;
-
-	/**
-	 * 旧系统个人业绩
-	 */
-	private BigDecimal oldPerformance;
-
-	/**
-	 * 旧系统团队业绩
-	 */
-	private BigDecimal oldUmbrellaPerformance;
-
 //	/**
 //	 * 我的业绩(节点数量)
 //	 */

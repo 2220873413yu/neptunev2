@@ -16,7 +16,6 @@ import com.xms.app.entity.vo.WithdrawalVo;
 import com.xms.app.handler.CustomException;
 import com.xms.app.service.BizWithdrawalService;
 import com.xms.common.config.redis.XmsRedis;
-import com.xms.common.config.redis.delayqueue.RedissonDelayOrder;
 import com.xms.common.core.domain.AjaxResult;
 import com.xms.common.mq.dynamic.AsyncDynamicOrderSettlementService;
 import com.xms.common.mq.dynamic.OrderMsgDO;
@@ -718,13 +717,7 @@ public class BizWithdrawalServiceImpl implements BizWithdrawalService {
 				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 					@Override
 					public void afterCommit() {
-						List<OrderMsgDO> orderMsgDOList = new ArrayList<>();
-						OrderMsgDO orderMsgDO = new OrderMsgDO();
-						orderMsgDO.setId(withdrawal.getStakeRoundId());
-						orderMsgDO.setBizType(2);
-						orderMsgDOList.add(orderMsgDO);
-						asyncDynamicOrderSettlementServiceImpl.sendMessage(orderMsgDOList);
-
+						sendLiquidationCheckMessageIfEnabled(withdrawal.getStakeRoundId(), "收益提现");
 					}
 				});
 			}
@@ -733,6 +726,37 @@ public class BizWithdrawalServiceImpl implements BizWithdrawalService {
 		}
 
 		return ResultPista.data("success");
+	}
+
+	/**
+	 * 当前轮次开启爆仓检测时投递 bizType=2 消息。
+	 *
+	 * <p>提现成功事务提交后重新读取最新轮次开关；关闭时仅保留提现和轮次累计值，不投递爆仓检测消息。</p>
+	 *
+	 * @param stakeRoundId 需要检测的质押轮次ID
+	 * @param scene 触发场景，用于日志定位
+	 */
+	private void sendLiquidationCheckMessageIfEnabled(Long stakeRoundId, String scene) {
+		StakeRound stakeRound = stakeRoundService.lambdaQuery()
+			.eq(StakeRound::getId, stakeRoundId)
+			.eq(StakeRound::getStatus, 0)
+			.select(StakeRound::getId, StakeRound::getStatus, StakeRound::getLiquidationCheckEnabled)
+			.one();
+		if (stakeRound == null) {
+			log.info("跳过爆仓检测投递，轮次不存在或已非进行中 scene:{} stakeRoundId:{}", scene, stakeRoundId);
+			return;
+		}
+		if (!Integer.valueOf(1).equals(stakeRound.getLiquidationCheckEnabled())) {
+			log.info("跳过爆仓检测投递，轮次爆仓检测开关关闭 scene:{} stakeRoundId:{}", scene, stakeRoundId);
+			return;
+		}
+
+		List<OrderMsgDO> orderMsgDOList = new ArrayList<>();
+		OrderMsgDO orderMsgDO = new OrderMsgDO();
+		orderMsgDO.setId(stakeRoundId);
+		orderMsgDO.setBizType(2);
+		orderMsgDOList.add(orderMsgDO);
+		asyncDynamicOrderSettlementServiceImpl.sendMessage(orderMsgDOList);
 	}
 
 	private void sendUserWealthVault(BigDecimal wealthVaultReward, Withdrawal withdrawal) {

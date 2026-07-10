@@ -8,7 +8,6 @@ import com.xms.app.entity.bo.OldHToAcpDepositCallbackBo;
 import com.xms.app.entity.bo.StakeOrderCallbackBo;
 import com.xms.app.entity.req.HBalanceAcpDepositReq;
 import com.xms.app.service.BizStakeService;
-import com.xms.common.config.redis.delayqueue.RedissonDelayOrder;
 import com.xms.common.config.redis.lock.RedisLock;
 import com.xms.common.constant.*;
 import com.xms.common.core.domain.api.ResultPista;
@@ -94,9 +93,11 @@ public class BizStakeServiceImpl implements BizStakeService {
 	private String newMd5Key;
 
 	/**
-	 * 用户H余额换ACP入金
+	 * 用户H余额换ACP入金，并将换算后的ACP数量同时记入总业绩和真实业绩。
 	 *
-	 * @param req 请求参数
+	 * <p>钱包扣减、订单创建和后置结算沿用原流程；当前用户增加真实个人业绩，全部父级增加真实团队业绩。</p>
+	 *
+	 * @param req H入金数量请求，单位H
 	 * @return 质押订单号
 	 */
 	@Override
@@ -120,8 +121,8 @@ public class BizStakeServiceImpl implements BizStakeService {
 		BigDecimal hUsdtAmount = hAmount.multiply(priceSnapshot.getHPriceUsdt())
 			.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
 		BigDecimal acpDepositAmount = calculateAcpDepositAmount(hUsdtAmount, priceSnapshot.getAcpPriceUsdt());
-		BigDecimal minStakeAmount = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_acp_deposit_min_amount));
-		if (acpDepositAmount.compareTo(minStakeAmount) < 0) {
+		BigDecimal minStakeAmount = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_h_deposit_min_amount));
+		if (hAmount.compareTo(minStakeAmount) < 0) {
 			throw new ServiceException(ResponseCode.CODE_1255);
 		}
 
@@ -146,6 +147,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 			.set(UserInfo::getIsValid, 1)
 			.setSql("performance = performance + " + acpDepositAmount)
 			.setSql("history_performance = history_performance + " + acpDepositAmount)
+			.setSql("real_performance = real_performance + " + acpDepositAmount)
 			.update();
 		if (!update) {
 			throw new ServiceException(ResponseCode.CODE_1002);
@@ -164,6 +166,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 			update = userInfoService.lambdaUpdate()
 				.in(UserInfo::getUserId, userInfo.getParentIds())
 				.setSql("umbrella_performance = umbrella_performance + " + acpDepositAmount)
+				.setSql("real_umbrella_performance = real_umbrella_performance + " + acpDepositAmount)
 				.update();
 			if (!update) {
 				throw new ServiceException(ResponseCode.CODE_1002);
@@ -185,14 +188,15 @@ public class BizStakeServiceImpl implements BizStakeService {
 			}
 		}
 
-		boolean updateRound = stakeRoundServiceImpl.lambdaUpdate()
+		//只有真实acp质押才会增加player_stake_total
+/*		boolean updateRound = stakeRoundServiceImpl.lambdaUpdate()
 			.eq(StakeRound::getId, stakeRound.getId())
 			.setSql("player_stake_total = player_stake_total + " + acpDepositAmount)
 			.update();
 		if (!updateRound) {
 			log.error("更新轮次质押总量失败");
 			throw new ServiceException(ResponseCode.CODE_1002);
-		}
+		}*/
 
 		BigDecimal giftRatioSnapshot = new BigDecimal(sysParaServiceImpl.getValue(ConstantSys.biz_acp_h_gift_ratio))
 			.setScale(ConstantStatic.newScale, ConstantStatic.roundingModeNew);
@@ -237,10 +241,12 @@ public class BizStakeServiceImpl implements BizStakeService {
 
 
 	/**
-	 * 旧系统H换ACP入金回调
+	 * 处理旧系统H换ACP入金回调，并将换算后的ACP数量同时记入总业绩和映射业绩。
 	 *
-	 * @param req
-	 * @return
+	 * <p>当前用户增加映射个人业绩，全部父级增加映射团队业绩；订单、赠送H和后置结算逻辑保持不变。</p>
+	 *
+	 * @param req 旧系统H入金回调参数，amount单位H
+	 * @return 回调处理结果
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -317,6 +323,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 				.set(UserInfo::getIsValid, 1)
 				.setSql("performance = performance + " + acpDepositAmount)
 				.setSql("history_performance = history_performance + " + acpDepositAmount)
+				.setSql("mapping_performance = mapping_performance + " + acpDepositAmount)
 				.update();
 			if (!update) {
 				throw new ServiceException(ResponseCode.CODE_1002);
@@ -339,6 +346,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 			update = userInfoService.lambdaUpdate()
 				.in(UserInfo::getUserId, userInfo.getParentIds())
 				.setSql("umbrella_performance = umbrella_performance + " + acpDepositAmount)
+				.setSql("mapping_umbrella_performance = mapping_umbrella_performance + " + acpDepositAmount)
 				.update();
 			if (!update) {
 				throw new ServiceException(ResponseCode.CODE_1002);
@@ -361,15 +369,15 @@ public class BizStakeServiceImpl implements BizStakeService {
 			}
 		}
 
-		//更新本轮的质押量
-		boolean update1 = stakeRoundServiceImpl.lambdaUpdate()
-			.eq(StakeRound::getId, stakeRound.getId())
-			.setSql("player_stake_total = player_stake_total + " + acpDepositAmount)
-			.update();
-		if (!update1) {
-			log.error("更新轮次质押总量失败");
-			throw new ServiceException(ResponseCode.CODE_1002);
-		}
+		//只有真实acp质押才会增加player_stake_total
+//		boolean update1 = stakeRoundServiceImpl.lambdaUpdate()
+//			.eq(StakeRound::getId, stakeRound.getId())
+//			.setSql("player_stake_total = player_stake_total + " + acpDepositAmount)
+//			.update();
+//		if (!update1) {
+//			log.error("更新轮次质押总量失败");
+//			throw new ServiceException(ResponseCode.CODE_1002);
+//		}
 
 		String orderNo = IDUtils.getSnowflakeStr();
 		StakeOrder stakeOrder = new StakeOrder();
@@ -513,13 +521,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
-				List<OrderMsgDO> orderMsgDOList = new ArrayList<>();
-				OrderMsgDO orderMsgDO = new OrderMsgDO();
-				orderMsgDO.setId(hOrder.getStakeRoundId());
-				orderMsgDO.setBizType(2);
-				orderMsgDOList.add(orderMsgDO);
-				asyncDynamicOrderSettlementServiceImpl.sendMessage(orderMsgDOList);
-
+				sendLiquidationCheckMessageIfEnabled(hOrder.getStakeRoundId(), "购买贡献分");
 			}
 		});
 
@@ -527,6 +529,46 @@ public class BizStakeServiceImpl implements BizStakeService {
 		return ResultPista.success();
 	}
 
+	/**
+	 * 当前轮次开启爆仓检测时投递 bizType=2 消息。
+	 *
+	 * <p>该方法在主事务提交后调用，会重新读取最新轮次开关；如果管理员已关闭开关，则跳过投递，
+	 * 保证关闭期间不检测、不爆仓。</p>
+	 *
+	 * @param stakeRoundId 需要检测的质押轮次ID
+	 * @param scene 触发场景，用于日志定位
+	 */
+	private void sendLiquidationCheckMessageIfEnabled(Long stakeRoundId, String scene) {
+		StakeRound stakeRound = stakeRoundServiceImpl.lambdaQuery()
+			.eq(StakeRound::getId, stakeRoundId)
+			.eq(StakeRound::getStatus, 0)
+			.select(StakeRound::getId, StakeRound::getStatus, StakeRound::getLiquidationCheckEnabled)
+			.one();
+		if (stakeRound == null) {
+			log.info("跳过爆仓检测投递，轮次不存在或已非进行中 scene:{} stakeRoundId:{}", scene, stakeRoundId);
+			return;
+		}
+		if (!Integer.valueOf(1).equals(stakeRound.getLiquidationCheckEnabled())) {
+			log.info("跳过爆仓检测投递，轮次爆仓检测开关关闭 scene:{} stakeRoundId:{}", scene, stakeRoundId);
+			return;
+		}
+
+		List<OrderMsgDO> orderMsgDOList = new ArrayList<>();
+		OrderMsgDO orderMsgDO = new OrderMsgDO();
+		orderMsgDO.setId(stakeRoundId);
+		orderMsgDO.setBizType(2);
+		orderMsgDOList.add(orderMsgDO);
+		asyncDynamicOrderSettlementServiceImpl.sendMessage(orderMsgDOList);
+	}
+
+	/**
+	 * 处理正常ACP链上入金回调，并将成功入金数量同时记入总业绩和真实业绩。
+	 *
+	 * <p>当前用户增加真实个人业绩，全部父级增加真实团队业绩；无效或低于最低数量的订单不计业绩。</p>
+	 *
+	 * @param req ACP入金回调参数，amount单位ACP
+	 * @return 回调处理结果
+	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	@RedisLock(value = RedisConstant.LockConstant.XMS_STAKE_ORDER_PLAN)
@@ -587,6 +629,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 				.set(UserInfo::getIsValid, 1)
 				.setSql("performance = performance + " + req.getAmount())
 				.setSql("history_performance = history_performance + " + req.getAmount())
+				.setSql("real_performance = real_performance + " + req.getAmount())
 				.update();
 			if (!update) {
 				throw new ServiceException(ResponseCode.CODE_1002);
@@ -609,6 +652,7 @@ public class BizStakeServiceImpl implements BizStakeService {
 			update = userInfoService.lambdaUpdate()
 				.in(UserInfo::getUserId, userInfo.getParentIds())
 				.setSql("umbrella_performance = umbrella_performance + " + req.getAmount())
+				.setSql("real_umbrella_performance = real_umbrella_performance + " + req.getAmount())
 				.update();
 			if (!update) {
 				throw new ServiceException(ResponseCode.CODE_1002);
