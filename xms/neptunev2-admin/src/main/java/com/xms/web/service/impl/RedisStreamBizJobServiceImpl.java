@@ -698,8 +698,7 @@ public class RedisStreamBizJobServiceImpl implements IRedisStreamBizJobService {
 			.list();
 
 		//正常ACP入金、用户H余额换ACP入金发放工作室收益；旧系统H换ACP入金只保留仓位、业绩和等级重算。
-		if ((ConstantType.stake_order_deposit_source_type.type_1 == stakeOrder.getDepositSourceType()
-			|| ConstantType.stake_order_deposit_source_type.type_4 == stakeOrder.getDepositSourceType())
+		if ((ConstantType.stake_order_deposit_source_type.type_1 == stakeOrder.getDepositSourceType())
 			&& CollectionUtil.isNotEmpty(userInfo.getParentIds())) {
 			//发放工作室收益
 			sendStudioSubsidyReward(userInfo, userLevelConfigList, stakeOrder);
