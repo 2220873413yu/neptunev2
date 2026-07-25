@@ -169,7 +169,7 @@ sms:
   #短信是否启动
   enabled: true
 
-# u盾充值、提现
+# 没用到 u盾充值、提现
 udun.config:
   domain: https://sig11.udun.io
   merchant: 321160

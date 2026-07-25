@@ -192,7 +192,7 @@ sms:
   #短信是否启动
   enabled: true
 
-
+#没用到
 udun.config:
   domain: https://sig10.udun.io
   merchant: 321160
